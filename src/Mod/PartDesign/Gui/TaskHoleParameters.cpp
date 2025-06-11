@@ -22,12 +22,18 @@
 
 #include "PreCompiled.h"
 
+#include <BRepAdaptor_Curve.hxx>
+
 #include <Base/Console.h>
 #include <Base/Tools.h>
 #include <App/Document.h>
 #include <Gui/Application.h>
 #include <Gui/Command.h>
 #include <Gui/Document.h>
+#include <Gui/Inventor/Draggers/Gizmo.h>
+#include <Gui/Inventor/Draggers/GizmoHelper.h>
+#include "Gui/Inventor/Draggers/SoLinearDragger.h"
+#include <Gui/Inventor/Draggers/SoRotationDragger.h>
 #include <Gui/Selection/Selection.h>
 #include <Gui/ViewProvider.h>
 #include <Mod/PartDesign/App/FeatureHole.h>
@@ -257,6 +263,8 @@ TaskHoleParameters::TaskHoleParameters(ViewProviderHole* HoleView, QWidget* pare
     // NOLINTEND
 
     this->groupLayout()->addWidget(proxy);
+
+    setupGizmos(HoleView);
 }
 
 TaskHoleParameters::~TaskHoleParameters() = default;
@@ -397,6 +405,10 @@ void TaskHoleParameters::baseProfileTypeChanged(int index)
     if (auto hole = getObject<PartDesign::Hole>()) {
         hole->BaseProfileType.setValue(PartDesign::Hole::baseProfileOption_idxToBitmask(index));
         recomputeFeature();
+
+        if (gizmos) {
+            setGizmoPositions();
+        }
     }
 }
 
@@ -583,10 +595,15 @@ void TaskHoleParameters::drillForDepthChanged()
 
 void TaskHoleParameters::taperedChanged()
 {
-    ui->TaperedAngle->setEnabled(ui->Tapered->isChecked());
+    bool checked = ui->Tapered->isChecked();
+    ui->TaperedAngle->setEnabled(checked);
     if (auto hole = getObject<PartDesign::Hole>()) {
-        hole->Tapered.setValue(ui->Tapered->isChecked());
+        hole->Tapered.setValue(checked);
         recomputeFeature();
+
+        if (gizmos) {
+            gizmos->getGizmo<RotationGizmo>(1)->getDraggerContainer()->visible = checked;
+        }
     }
 }
 
@@ -595,6 +612,11 @@ void TaskHoleParameters::reversedChanged()
     if (auto hole = getObject<PartDesign::Hole>()) {
         hole->Reversed.setValue(ui->Reversed->isChecked());
         recomputeFeature();
+
+        if (gizmos) {
+            auto holeDepthGizmo = gizmos->getGizmo<LinearGizmo>(0);
+            holeDepthGizmo->reverseDir();
+        }
     }
 }
 
@@ -1144,6 +1166,101 @@ void TaskHoleParameters::updateHoleCutLimits(PartDesign::Hole* hole)
     constexpr double minHoleCutDifference = 0.1;
     // HoleCutDiameter must not be smaller or equal than the Diameter
     ui->HoleCutDiameter->setMinimum(hole->Diameter.getValue() + minHoleCutDifference);
+}
+
+void TaskHoleParameters::setupGizmos(ViewProviderHole* vp)
+{
+    if (!Gizmos::isEnabled()) {
+        return;
+    }
+
+    gizmos = std::make_unique<Gizmos>();
+
+    auto holeDepthGizmo = new LinearGizmo(ui->Depth);
+
+    gizmos->addGizmo(holeDepthGizmo);
+    gizmos->initGizmos();
+
+    setGizmoPositions();
+
+    vp->attachGizmos(gizmos.get());
+}
+
+std::vector<Base::Vector3d> getHolePositionFromShape(const Part::TopoShape& profileshape, const long baseProfileType)
+{
+    using BaseProfileTypeOptions=PartDesign::Hole::BaseProfileTypeOptions;
+
+    std::vector<Base::Vector3d> positions;
+
+    // Iterate over edges and filter out non-circle/non-arc types
+    if (baseProfileType & BaseProfileTypeOptions::OnCircles ||
+       baseProfileType & BaseProfileTypeOptions::OnArcs) {
+        for (const auto &profileEdge : profileshape.getSubTopoShapes(TopAbs_EDGE)) {
+            TopoDS_Edge edge = TopoDS::Edge(profileEdge.getShape());
+            BRepAdaptor_Curve adaptor(edge);
+
+            // Circle base?
+            if (adaptor.GetType() != GeomAbs_Circle) {
+                continue;
+            }
+            // Filter for circles
+            if (!(baseProfileType & BaseProfileTypeOptions::OnCircles) && adaptor.IsClosed()) {
+                continue;
+            }
+
+            // Filter for arcs
+            if (!(baseProfileType & BaseProfileTypeOptions::OnArcs) && !adaptor.IsClosed()) {
+                continue;
+            }
+
+            gp_Circ circle = adaptor.Circle();
+            positions.push_back(
+                Base::convertTo<Base::Vector3d>(circle.Axis().Location())
+            );
+        }
+    }
+
+    // To avoid breaking older files which where not made with
+    // holes on points
+    if (baseProfileType & BaseProfileTypeOptions::OnPoints) {
+        // Iterate over vertices while avoiding edges so that curve handles are ignored
+        for (const auto &profileVertex : profileshape.getSubTopoShapes(TopAbs_VERTEX, TopAbs_EDGE)) {
+            TopoDS_Vertex vertex = TopoDS::Vertex(profileVertex.getShape());
+            positions.push_back(
+                Base::convertTo<Base::Vector3d>(BRep_Tool::Pnt(vertex))
+            );
+        }
+    }
+
+    return positions;
+}
+
+void TaskHoleParameters::setGizmoPositions()
+{
+    if (!gizmos) {
+        return;
+    }
+
+    auto hole = getObject<PartDesign::Hole>();
+    Part::TopoShape profileShape = hole->getProfileShape(
+        Part::ShapeOption::NeedSubElement |
+        Part::ShapeOption::ResolveLink |
+        Part::ShapeOption::Transform |
+        Part::ShapeOption::DontSimplifyCompound
+    );
+    Base::Vector3d dir = hole->guessNormalDirection(profileShape);
+    std::vector<Base::Vector3d> holePositions = getHolePositionFromShape(profileShape, hole->BaseProfileType.getValue());
+
+    if (holePositions.size() == 0) {
+        gizmos->visible = false;
+        return;
+    } else {
+        gizmos->visible = true;
+    }
+
+    auto holeDepthGizmo = gizmos->getGizmo<LinearGizmo>(0);
+
+    holeDepthGizmo->Gizmo::setDraggerPlacement(holePositions[0] - ui->HoleCutDepth->value().getValue() * dir, -dir);
 }
 
 
