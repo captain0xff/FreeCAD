@@ -13,7 +13,7 @@ if(FC_FLATPAK)
 endif(FC_FLATPAK)
 
 if(WIN32)
-add_definitions(-DFCGui -DQSINT_MAKEDLL -DOVR_OS_WIN32 -DQUARTER_INTERNAL -DQUARTER_MAKE_DLL -DCOIN_DLL)
+    add_definitions(-DFCGui -DQSINT_MAKEDLL -DOVR_OS_WIN32 -DQUARTER_INTERNAL -DQUARTER_MAKE_DLL -DCOIN_DLL)
 endif(WIN32)
 
 IF(CMAKE_BUILD_TYPE)
@@ -1083,6 +1083,7 @@ SET(Inventor_CPP_SRCS
     Inventor/Draggers/SoLinearDragger.cpp
     Inventor/Draggers/SoPlanarDragger.cpp
     Inventor/Draggers/SoRotationDragger.cpp
+    Inventor/Draggers/Gizmo.cpp
     SoFCColorBar.cpp
     SoFCColorBarNotifier.cpp
     SoFCColorGradient.cpp
@@ -1119,6 +1120,7 @@ SET(Inventor_SRCS
     Inventor/Draggers/SoLinearDragger.h
     Inventor/Draggers/SoPlanarDragger.h
     Inventor/Draggers/SoRotationDragger.h
+    Inventor/Draggers/Gizmo.h
     SoFCColorBar.h
     SoFCColorBarNotifier.h
     SoFCColorGradient.h
@@ -1451,6 +1453,7 @@ if (EIGEN3_NO_DEPRECATED_COPY)
         Inventor/Draggers/SoLinearDragger.cpp
         Inventor/Draggers/SoPlanarDragger.cpp
         Inventor/Draggers/SoRotationDragger.cpp
+        Inventor/Draggers/Gizmo.cpp
         SoFCOffscreenRenderer.cpp
         Selection/SoFCSelectionAction.cpp
         Quarter/QuarterWidget.cpp
