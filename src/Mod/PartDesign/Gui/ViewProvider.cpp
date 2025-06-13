@@ -42,6 +42,7 @@
 #include <Mod/PartDesign/App/Feature.h>
 
 #include <Gui/Inventor/Draggers/Gizmo.h>
+#include <Gui/View3DInventorViewer.h>
 
 #include "TaskFeatureParameters.h"
 
@@ -176,6 +177,8 @@ void ViewProvider::setEditViewer(Gui::View3DInventorViewer* viewer, int ModNum)
     PartGui::ViewProviderPart::setEditViewer(viewer, ModNum);
 
     for (auto gizmo: gizmos) {
+        gizmo->setUpAutoScale(viewer->getSoRenderManager()->getCamera());
+
         auto originPlacement = App::GeoFeature::getGlobalPlacement(getObject())
             * getObjectPlacement().inverse();
         gizmo->attachViewer(viewer, originPlacement);
