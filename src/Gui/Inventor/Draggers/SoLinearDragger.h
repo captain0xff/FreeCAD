@@ -80,6 +80,8 @@ public:
     void setLabelVisibility(bool visible);
     bool isLabelVisible();
 
+    float getDraggerSize() const; //!< returns the size of the dragger from base to tip
+
 protected:
     ~SoLinearDragger() override;
     SbBool setUpConnections(SbBool onoff, SbBool doitalways = FALSE) override;
@@ -126,6 +128,7 @@ public:
     SoSFRotation rotation;
     SoSFColor color;
     SoSFVec3f translation;
+    SoSFVec3f scale;
 
     void setVisibility(bool visible);
     bool isVisible();

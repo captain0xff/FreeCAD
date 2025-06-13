@@ -228,6 +228,11 @@ void SoLinearDragger::setupGeometryCalculator()
         "oC = vec3f(0, a + b * 1.5, 0); ";
 }
 
+float SoLinearDragger::getDraggerSize() const
+{
+    return coneHeight.getValue() + cylinderHeight.getValue();
+}
+
 void SoLinearDragger::startCB(void*, SoDragger* d)
 {
     auto sudoThis = static_cast<SoLinearDragger*>(d);
@@ -423,6 +428,7 @@ SoLinearDraggerContainer::SoLinearDraggerContainer()
     SO_KIT_ADD_FIELD(rotation, (0, 0, 0, 0));
     SO_KIT_ADD_FIELD(color, (0, 0, 0));
     SO_KIT_ADD_FIELD(translation, (0, 0, 0));
+    SO_KIT_ADD_FIELD(scale, (1, 1, 1));
 
     SO_KIT_INIT_INSTANCE();
 
@@ -442,8 +448,9 @@ SoBaseColor* SoLinearDraggerContainer::buildColor()
 
 SoTransform* SoLinearDraggerContainer::buildTransform() {
     auto transform = new SoTransform;
-    transform->translation.connectFrom(&this->translation);
-    transform->rotation.connectFrom(&this->rotation);
+    transform->translation.connectFrom(&translation);
+    transform->rotation.connectFrom(&rotation);
+    transform->scaleFactor.connectFrom(&scale);
 
     return transform;
 }
