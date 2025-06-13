@@ -65,7 +65,9 @@ TaskExtrudeParameters::TaskExtrudeParameters(ViewProviderExtrude* SketchBasedVie
     this->groupLayout()->addWidget(proxy);
 }
 
-TaskExtrudeParameters::~TaskExtrudeParameters() = default;
+TaskExtrudeParameters::~TaskExtrudeParameters() {
+    gizmo.uninitDragger();
+}
 
 void TaskExtrudeParameters::setupDialog()
 {
@@ -192,6 +194,17 @@ void TaskExtrudeParameters::setupDialog()
 
     // Due to signals attached after changes took took into effect we should update the UI now.
     updateUI(index);
+
+    connect(ui->lengthEdit, qOverload<double>(&Gui::PrefQuantitySpinBox::valueChanged), [this](double value) { gizmo.setDragLength(value); });
+    gizmo.setProperty(ui->lengthEdit);
+    gizmo.initDragger();
+
+    auto shape = extrude->getProfileShape();
+    Base::Vector3d center;
+    shape.getCenterOfGravity(center);
+    gizmo.setDraggerPlacement(center, extrude->getProfileNormal());
+
+    vp->attachGizmo(&gizmo);
 }
 
 void TaskExtrudeParameters::readValuesFromHistory()
