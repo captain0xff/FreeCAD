@@ -1254,9 +1254,8 @@ void TaskHoleParameters::setGizmoPositions()
     if (holePositions.size() == 0) {
         gizmos->visible = false;
         return;
-    } else {
-        gizmos->visible = true;
     }
+    gizmos->visible = true;
 
     auto holeDepthGizmo = gizmos->getGizmo<LinearGizmo>(0);
 

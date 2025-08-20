@@ -240,9 +240,8 @@ void TaskFilletParameters::setGizmoPositions()
     if (shapes.size() == 0) {
         gizmos->visible = false;
         return;
-    } else {
-        gizmos->visible = true;
     }
+    gizmos->visible = true;
 
     // Attach the arrow to the first edge
     Part::TopoShape edge = shapes[0];

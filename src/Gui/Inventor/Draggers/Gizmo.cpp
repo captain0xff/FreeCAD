@@ -58,7 +58,7 @@ void Gizmo::setDraggerPlacement(const Base::Vector3d& pos, const Base::Vector3d&
     );
 }
 
-bool Gizmo::delayedUpdateEnabled()
+bool Gizmo::isDelayedUpdateEnabled()
 {
     static Base::Reference<ParameterGrp> hGrp = App::GetApplication()
         .GetUserParameter()
@@ -173,12 +173,12 @@ SoLinearDraggerContainer* LinearGizmo::getDraggerContainer()
 
 void LinearGizmo::setProperty(QuantitySpinBox* property)
 {
-    if (connection) {
-        QuantitySpinBox::disconnect(connection);
+    if (quantityChangedConnection) {
+        QuantitySpinBox::disconnect(quantityChangedConnection);
     }
 
     this->property = property;
-    connection = QuantitySpinBox::connect(
+    quantityChangedConnection = QuantitySpinBox::connect(
         property, qOverload<double>(&Gui::QuantitySpinBox::valueChanged),
         [this] (double value) {
             setDragLength(value);
@@ -191,14 +191,14 @@ void LinearGizmo::draggingStarted()
     initialValue = property->value().getValue();
     dragger->translationIncrementCount.setValue(0);
 
-    if (delayedUpdateEnabled()) {
+    if (isDelayedUpdateEnabled()) {
         property->blockSignals(true);
     }
 }
 
 void LinearGizmo::draggingFinished()
 {
-    if (delayedUpdateEnabled()) {
+    if (isDelayedUpdateEnabled()) {
         property->blockSignals(false);
         property->valueChanged(property->value().getValue());
     }
@@ -374,14 +374,14 @@ void RotationGizmo::draggingStarted()
     initialValue = property->value().getValue();
     dragger->rotationIncrementCount.setValue(0);
 
-    if (delayedUpdateEnabled()) {
+    if (isDelayedUpdateEnabled()) {
         property->blockSignals(true);
     }
 }
 
 void RotationGizmo::draggingFinished()
 {
-    if (delayedUpdateEnabled()) {
+    if (isDelayedUpdateEnabled()) {
         property->blockSignals(false);
         property->valueChanged(property->value().getValue());
     }
@@ -467,12 +467,12 @@ void RotationGizmo::orientAlongCamera(SoCamera* camera)
 
 void RotationGizmo::setProperty(QuantitySpinBox* property)
 {
-    if (connection) {
-        QuantitySpinBox::disconnect(connection);
+    if (quantityChangedConnection) {
+        QuantitySpinBox::disconnect(quantityChangedConnection);
     }
 
     this->property = property;
-    connection = QuantitySpinBox::connect(
+    quantityChangedConnection = QuantitySpinBox::connect(
         property, qOverload<double>(&Gui::QuantitySpinBox::valueChanged),
         [this] (double value) {
             setRotAngle(value);
@@ -619,13 +619,15 @@ void Gizmos::addGizmo(Gizmo* gizmo)
 
 void Gizmos::attachViewer(Gui::View3DInventorViewer* viewer, Base::Placement &origin)
 {
-    if (viewer) {
-        auto mat = origin.toMatrix();
-
-        viewer->getDocument()->setEditingTransform(mat);
-        So3DAnnotation* annotation = SO_GET_ANY_PART(this, "annotation", So3DAnnotation);
-        viewer->setupEditingRoot(annotation, &mat);
+    if (!viewer) {
+        return;
     }
+
+    auto mat = origin.toMatrix();
+
+    viewer->getDocument()->setEditingTransform(mat);
+    So3DAnnotation* annotation = SO_GET_ANY_PART(this, "annotation", So3DAnnotation);
+    viewer->setupEditingRoot(annotation, &mat);
 }
 
 void Gizmos::setUpAutoScale(SoCamera* cameraIn)
@@ -661,14 +663,16 @@ void Gizmos::cameraChangeCallback(void* data, SoSensor*)
     auto sudoThis = static_cast<Gizmos*>(data);
 
     SoField* field = sudoThis->cameraSensor.getAttachedField();
-    if (field) {
-        auto camera = static_cast<SoCamera*>(field->getContainer());
+    if (!field) {
+        return;
+    }
 
-        SbViewVolume viewVolume = camera->getViewVolume();
-        for (auto gizmo: sudoThis->gizmos) {
-            float localScale = viewVolume.getWorldToScreenScale(gizmo->getDraggerPlacement().pos, 0.015);
-            gizmo->setGeometryScale(localScale);
-        }
+    auto camera = static_cast<SoCamera*>(field->getContainer());
+
+    SbViewVolume viewVolume = camera->getViewVolume();
+    for (auto gizmo: sudoThis->gizmos) {
+        float localScale = viewVolume.getWorldToScreenScale(gizmo->getDraggerPlacement().pos, 0.015);
+        gizmo->setGeometryScale(localScale);
     }
 }
 

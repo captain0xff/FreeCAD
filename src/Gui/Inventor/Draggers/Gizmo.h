@@ -71,7 +71,7 @@ public:
 
     virtual void setGeometryScale(float scale) = 0;
     virtual void orientAlongCamera([[maybe_unused]] SoCamera* camera) {};
-    bool delayedUpdateEnabled();
+    bool isDelayedUpdateEnabled();
 
 protected:
     QuantitySpinBox* property = nullptr;
@@ -102,7 +102,7 @@ public:
 private:
     SoLinearDragger* dragger = nullptr;
     SoLinearDraggerContainer* draggerContainer = nullptr;
-    QMetaObject::Connection connection;
+    QMetaObject::Connection quantityChangedConnection;
 
     void draggingStarted();
     void draggingFinished();
@@ -143,7 +143,7 @@ private:
     SoFieldSensor translationSensor;
     LinearGizmo* linearGizmo = nullptr;
     bool automaticOrientation = false;
-    QMetaObject::Connection connection;
+    QMetaObject::Connection quantityChangedConnection;
 
     void draggingStarted();
     void draggingFinished();

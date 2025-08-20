@@ -1315,8 +1315,8 @@ void TaskExtrudeParameters::setGizmoPositions()
     lengthGizmo2->Gizmo::setDraggerPlacement(center, -extrude->Direction.getValue());
     taperAngleGizmo2->placeOverLinearGizmo(lengthGizmo2);
 
-    Base::Vector3d padDir = extrude->Direction.getValue().getNormalized();
-    Base::Vector3d sketchDir = extrude->getProfileNormal().getNormalized();
+    Base::Vector3d padDir = extrude->Direction.getValue().Normalized();
+    Base::Vector3d sketchDir = extrude->getProfileNormal().Normalized();
 
     double lengthFactor = padDir.Dot(sketchDir);
     double multFactor = getMidplane()? 0.5 : 1;

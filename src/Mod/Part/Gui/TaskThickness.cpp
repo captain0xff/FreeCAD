@@ -338,23 +338,24 @@ void ThicknessWidget::setGizmoPositions()
     auto base = thickness->getTopoShape(thickness->Faces.getValue(), Part::ShapeOption::ResolveLink | Part::ShapeOption::Transform);
     auto faces = thickness->Faces.getSubValues(true);
 
-    if (faces.size() != 0) {
-        Part::TopoShape face = base.getSubTopoShape(faces[0].c_str());
-        if (face.getShape().ShapeType() == TopAbs_FACE) {
-            auto edges = getAdjacentEdgesFromFace(face);
-            assert(edges.size() != 0);
-            DraggerPlacementProps props = getDraggerPlacementFromEdgeAndFace(edges[0], face);
-
-            // The part thickness operation by default goes creates towards outside
-            // so -props.dir is taken 
-            gizmos->getGizmo(0)->setDraggerPlacement(props.position, -props.dir);
-
-            gizmos->visible = true;
-
-            return;
-        }
+    if (faces.size() == 0) {
+        gizmos->visible = false;
     }
-    gizmos->visible = false;
+
+    Part::TopoShape face = base.getSubTopoShape(faces[0].c_str());
+    if (face.getShape().ShapeType() == TopAbs_FACE) {
+        auto edges = getAdjacentEdgesFromFace(face);
+        assert(edges.size() != 0);
+        DraggerPlacementProps props = getDraggerPlacementFromEdgeAndFace(edges[0], face);
+
+        // The part thickness operation by default goes creates towards outside
+        // so -props.dir is taken 
+        gizmos->getGizmo(0)->setDraggerPlacement(props.position, -props.dir);
+
+        gizmos->visible = true;
+
+        return;
+    }
 }
 
 

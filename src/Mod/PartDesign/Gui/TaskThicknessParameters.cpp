@@ -301,16 +301,17 @@ void TaskThicknessParameters::setGizmoPositions()
     auto shapes = thickness->getContinuousEdges(baseShape);
     auto faces = thickness->getFaces(baseShape);
 
-    if (shapes.size() != 0 || faces.size() != 0) {
-        Part::TopoShape edge = shapes[0];
-        DraggerPlacementProps props = getDraggerPlacementFromEdgeAndFace(edge, faces[0]);
-
-        gizmos->getGizmo(0)->setDraggerPlacement(props.position, props.dir);
-
-        gizmos->visible = true;
-    } else {
+    if (shapes.size() == 0 || faces.size() == 0) {
         gizmos->visible = false;
+        return;
     }
+    gizmos->visible = true;
+
+    Part::TopoShape edge = shapes[0];
+    DraggerPlacementProps props = getDraggerPlacementFromEdgeAndFace(edge, faces[0]);
+
+    gizmos->getGizmo(0)->setDraggerPlacement(props.position, props.dir);
+
 }
 
 //**************************************************************************

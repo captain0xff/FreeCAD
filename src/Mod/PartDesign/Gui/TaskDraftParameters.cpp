@@ -320,13 +320,12 @@ void TaskDraftParameters::setGizmoPositions()
     Part::TopoShape baseShape = draft->getBaseTopoShape();
     std::vector<Part::TopoShape> faces = draft->getFaces(baseShape);
 
-    if (faces.size() != 0) {
-        // Not implemented yet!
-
-        gizmos->visible = true;
-    } else {
+    if (faces.size() == 0) {
         gizmos->visible = false;
+        return;
     }
+    gizmos->visible = true;
+    // Not implemented yet!
 }
 
 //**************************************************************************

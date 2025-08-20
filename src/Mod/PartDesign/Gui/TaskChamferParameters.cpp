@@ -355,44 +355,44 @@ void TaskChamferParameters::setupGizmos(ViewProviderDressUp* vp)
     gizmos = std::make_unique<Gizmos>();
 
     auto distanceGizmo = new Gui::LinearGizmo(ui->chamferSize);
-    auto twoDistanceGizmo = new Gui::LinearGizmo(ui->chamferSize);
+    auto secondDistanceGizmo = new Gui::LinearGizmo(ui->chamferSize);
     auto angleGizmo = new Gui::RotationGizmo(ui->chamferAngle);
 
-    connect(ui->chamferType, qOverload<int>(&QComboBox::currentIndexChanged), [this, twoDistanceGizmo, angleGizmo] (int index) {
+    connect(ui->chamferType, qOverload<int>(&QComboBox::currentIndexChanged), [this, secondDistanceGizmo, angleGizmo] (int index) {
         switch (index) {
             case 0:
-                twoDistanceGizmo->getDraggerContainer()->visible = true;
+                secondDistanceGizmo->getDraggerContainer()->visible = true;
                 angleGizmo->getDraggerContainer()->visible = false;
 
-                twoDistanceGizmo->setProperty(ui->chamferSize);
-                twoDistanceGizmo->setDragLength(ui->chamferSize->value().getValue());
+                secondDistanceGizmo->setProperty(ui->chamferSize);
+                secondDistanceGizmo->setDragLength(ui->chamferSize->value().getValue());
 
                 break;
             case 1:
-                twoDistanceGizmo->getDraggerContainer()->visible = true;
+                secondDistanceGizmo->getDraggerContainer()->visible = true;
                 angleGizmo->getDraggerContainer()->visible = false;
 
-                twoDistanceGizmo->setProperty(ui->chamferSize2);
-                twoDistanceGizmo->setDragLength(ui->chamferSize2->value().getValue());
+                secondDistanceGizmo->setProperty(ui->chamferSize2);
+                secondDistanceGizmo->setDragLength(ui->chamferSize2->value().getValue());
 
                 break;
             case 2:
-                twoDistanceGizmo->getDraggerContainer()->visible = false;
+                secondDistanceGizmo->getDraggerContainer()->visible = false;
                 angleGizmo->getDraggerContainer()->visible = true;
 
         }
     });
 
-    connect(ui->flipDirection, &QCheckBox::toggled, [distanceGizmo, twoDistanceGizmo] (bool) {
+    connect(ui->flipDirection, &QCheckBox::toggled, [distanceGizmo, secondDistanceGizmo] (bool) {
         GizmoPlacement placement = distanceGizmo->getDraggerPlacement();
-        GizmoPlacement placement2 = twoDistanceGizmo->getDraggerPlacement();
+        GizmoPlacement placement2 = secondDistanceGizmo->getDraggerPlacement();
 
         distanceGizmo->setDraggerPlacement(placement2.pos, placement2.dir);
-        twoDistanceGizmo->setDraggerPlacement(placement.pos, placement.dir);
+        secondDistanceGizmo->setDraggerPlacement(placement.pos, placement.dir);
     });
 
     gizmos->addGizmo(distanceGizmo);
-    gizmos->addGizmo(twoDistanceGizmo);
+    gizmos->addGizmo(secondDistanceGizmo);
     gizmos->addGizmo(angleGizmo);
     gizmos->initGizmos();
 
@@ -408,7 +408,7 @@ void TaskChamferParameters::setGizmoPositions()
     }
 
     auto distanceGizmo = gizmos->getGizmo<LinearGizmo>(0);
-    auto twoDistanceGizmo = gizmos->getGizmo<LinearGizmo>(1);
+    auto secondDistanceGizmo = gizmos->getGizmo<LinearGizmo>(1);
     auto angleGizmo = gizmos->getGizmo<RotationGizmo>(2);
 
     auto chamfer = getObject<PartDesign::Chamfer>();
@@ -418,9 +418,8 @@ void TaskChamferParameters::setGizmoPositions()
     if (shapes.size() == 0) {
         gizmos->visible = false;
         return;
-    } else {
-        gizmos->visible = true;
     }
+    gizmos->visible = true;
 
     Part::TopoShape edge = shapes[0];
     auto [face1, face2] = getAdjacentFacesFromEdge(edge, baseShape);
@@ -430,10 +429,11 @@ void TaskChamferParameters::setGizmoPositions()
 
     angleGizmo->placeBelowLinearGizmo(distanceGizmo);
     angleGizmo->getDraggerContainer()->setArcNormalDirection(Base::convertTo<SbVec3f>(-props.tangent));
+    // Only show the gizmo if the chamfer type is set to distance and angle
     angleGizmo->getDraggerContainer()->visible = getType() == 2;
 
     DraggerPlacementProps props2 = getDraggerPlacementFromEdgeAndFace(edge, face2);
-    twoDistanceGizmo->Gizmo::setDraggerPlacement(props2.position, props2.dir);
+    secondDistanceGizmo->Gizmo::setDraggerPlacement(props2.position, props2.dir);
 }
 
 //**************************************************************************
