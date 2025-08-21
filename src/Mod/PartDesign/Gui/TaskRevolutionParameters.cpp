@@ -765,8 +765,7 @@ void TaskRevolutionParameters::setupGizmos(ViewProvider* vp)
 
     vp->attachGizmos(gizmos.get());
 
-    rotationGizmo->getDraggerContainer()->visible = true;
-    rotationGizmo2->getDraggerContainer()->visible = false;
+    ui->changeMode->currentIndexChanged(ui->changeMode->currentIndex());
 
     if (getReversed()) {
         auto rotationGizmo = gizmos->getGizmo<RadialGizmo>(0);

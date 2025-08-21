@@ -1290,9 +1290,7 @@ void TaskExtrudeParameters::setupGizmos()
 
     vp->attachGizmos(gizmos.get());
 
-    // These gizmos shouldn't be visible until the user set type to two dimensions
-    taperAngleGizmo2->getDraggerContainer()->visible = false;
-    lengthGizmo2->getDraggerContainer()->visible = false;
+    ui->changeMode->currentIndexChanged(ui->changeMode->currentIndex());
 }
 
 void TaskExtrudeParameters::setGizmoPositions()

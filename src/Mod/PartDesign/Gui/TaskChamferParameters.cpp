@@ -401,6 +401,8 @@ void TaskChamferParameters::setupGizmos(ViewProviderDressUp* vp)
     setGizmoPositions();
 
     vp->attachGizmos(gizmos.get());
+
+    ui->chamferType->currentIndexChanged(ui->chamferType->currentIndex());
 }
 
 void TaskChamferParameters::setGizmoPositions()

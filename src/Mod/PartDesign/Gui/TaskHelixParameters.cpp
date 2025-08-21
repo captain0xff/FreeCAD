@@ -734,6 +734,8 @@ void TaskHelixParameters::setupGizmos(ViewProviderHelix* vp)
     setGizmoPositions();
 
     vp->attachGizmos(gizmos.get());
+
+    ui->inputMode->currentIndexChanged(ui->inputMode->currentIndex());
 }
 
 void TaskHelixParameters::setGizmoPositions()
