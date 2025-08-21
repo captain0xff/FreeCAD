@@ -292,42 +292,6 @@ void TaskDraftParameters::apply()
     TaskDressUpParameters::apply();
 }
 
-void TaskDraftParameters::setupGizmos(ViewProviderDressUp* vp)
-{
-    if (!Gizmos::isEnabled()) {
-        return;
-    }
-
-    gizmos = std::make_unique<Gizmos>();
-
-    auto rotationGizmo = new Gui::RotationGizmo(ui->draftAngle);
-
-    gizmos->addGizmo(rotationGizmo);
-    gizmos->initGizmos();
-
-    setGizmoPositions();
-
-    vp->attachGizmos(gizmos.get());
-}
-
-void TaskDraftParameters::setGizmoPositions()
-{
-    if (!gizmos) {
-        return;
-    }
-
-    auto draft = getObject<PartDesign::Draft>();
-    Part::TopoShape baseShape = draft->getBaseTopoShape();
-    std::vector<Part::TopoShape> faces = draft->getFaces(baseShape);
-
-    if (faces.size() == 0) {
-        gizmos->visible = false;
-        return;
-    }
-    gizmos->visible = true;
-    // Not implemented yet!
-}
-
 //**************************************************************************
 //**************************************************************************
 // TaskDialog

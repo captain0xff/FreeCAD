@@ -715,32 +715,27 @@ void TaskHelixParameters::apply()  // NOLINT
 
 void TaskHelixParameters::setupGizmos(ViewProviderHelix* vp)
 {
-    if (!Gizmos::isEnabled()) {
+    if (!GizmoContainer::isEnabled()) {
         return;
     }
 
-    gizmos = std::make_unique<Gizmos>();
+    heightGizmo = new Gui::LinearGizmo(ui->height);
 
-    auto heightGizmo = new Gui::LinearGizmo(ui->height);
-
-    connect(ui->inputMode, qOverload<int>(&QComboBox::currentIndexChanged), [heightGizmo] (int index) {
+    connect(ui->inputMode, qOverload<int>(&QComboBox::currentIndexChanged), [this] (int index) {
         bool isPitchTurnsAngle = index == static_cast<int>(HelixMode::pitch_turns_angle);
         heightGizmo->getDraggerContainer()->visible = !isPitchTurnsAngle;
     });
 
-    gizmos->addGizmo(heightGizmo);
-    gizmos->initGizmos();
+    gizmoContainer = vp->addGizmos({heightGizmo});
 
     setGizmoPositions();
-
-    vp->attachGizmos(gizmos.get());
 
     ui->inputMode->currentIndexChanged(ui->inputMode->currentIndex());
 }
 
 void TaskHelixParameters::setGizmoPositions()
 {
-    if (!gizmos) {
+    if (!gizmoContainer) {
         return;
     }
 
@@ -755,7 +750,7 @@ void TaskHelixParameters::setGizmoPositions()
     // and along the helix axis
     Base::Vector3d pos = basePos + axisDir.Dot(profileCentre - basePos) * axisDir;
 
-    gizmos->getGizmo(0)->setDraggerPlacement(pos, axisDir);
+    heightGizmo->Gizmo::setDraggerPlacement(pos, axisDir);
 }
 
 

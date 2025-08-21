@@ -348,17 +348,15 @@ void TaskChamferParameters::apply()
 
 void TaskChamferParameters::setupGizmos(ViewProviderDressUp* vp)
 {
-    if (!Gizmos::isEnabled()) {
+    if (!GizmoContainer::isEnabled()) {
         return;
     }
 
-    gizmos = std::make_unique<Gizmos>();
+    distanceGizmo = new Gui::LinearGizmo(ui->chamferSize);
+    secondDistanceGizmo = new Gui::LinearGizmo(ui->chamferSize);
+    angleGizmo = new Gui::RotationGizmo(ui->chamferAngle);
 
-    auto distanceGizmo = new Gui::LinearGizmo(ui->chamferSize);
-    auto secondDistanceGizmo = new Gui::LinearGizmo(ui->chamferSize);
-    auto angleGizmo = new Gui::RotationGizmo(ui->chamferAngle);
-
-    connect(ui->chamferType, qOverload<int>(&QComboBox::currentIndexChanged), [this, secondDistanceGizmo, angleGizmo] (int index) {
+    connect(ui->chamferType, qOverload<int>(&QComboBox::currentIndexChanged), [this] (int index) {
         auto type = static_cast<Part::ChamferType>(index);
 
         switch (type) {
@@ -385,7 +383,7 @@ void TaskChamferParameters::setupGizmos(ViewProviderDressUp* vp)
         }
     });
 
-    connect(ui->flipDirection, &QCheckBox::toggled, [distanceGizmo, secondDistanceGizmo] (bool) {
+    connect(ui->flipDirection, &QCheckBox::toggled, [this] (bool) {
         GizmoPlacement placement = distanceGizmo->getDraggerPlacement();
         GizmoPlacement placement2 = secondDistanceGizmo->getDraggerPlacement();
 
@@ -393,37 +391,30 @@ void TaskChamferParameters::setupGizmos(ViewProviderDressUp* vp)
         secondDistanceGizmo->setDraggerPlacement(placement.pos, placement.dir);
     });
 
-    gizmos->addGizmo(distanceGizmo);
-    gizmos->addGizmo(secondDistanceGizmo);
-    gizmos->addGizmo(angleGizmo);
-    gizmos->initGizmos();
+    gizmoContainer = vp->addGizmos({
+        distanceGizmo, secondDistanceGizmo, angleGizmo
+    });
 
     setGizmoPositions();
-
-    vp->attachGizmos(gizmos.get());
 
     ui->chamferType->currentIndexChanged(ui->chamferType->currentIndex());
 }
 
 void TaskChamferParameters::setGizmoPositions()
 {
-    if (!gizmos) {
+    if (!gizmoContainer) {
         return;
     }
-
-    auto distanceGizmo = gizmos->getGizmo<LinearGizmo>(0);
-    auto secondDistanceGizmo = gizmos->getGizmo<LinearGizmo>(1);
-    auto angleGizmo = gizmos->getGizmo<RotationGizmo>(2);
 
     auto chamfer = getObject<PartDesign::Chamfer>();
     auto baseShape = chamfer->getBaseTopoShape();
     auto shapes = chamfer->getContinuousEdges(baseShape);
 
     if (shapes.size() == 0) {
-        gizmos->visible = false;
+        gizmoContainer->visible = false;
         return;
     }
-    gizmos->visible = true;
+    gizmoContainer->visible = true;
 
     Part::TopoShape edge = shapes[0];
     auto [face1, face2] = getAdjacentFacesFromEdge(edge, baseShape);

@@ -35,7 +35,9 @@ class Chamfer;
 }
 
 namespace Gui {
-class Gizmos;
+class LinearGizmo;
+class RotationalGizmo;
+class GizmoContainer;
 }
 
 namespace PartDesignGui {
@@ -73,9 +75,13 @@ protected:
 
 private:
     std::unique_ptr<Ui_TaskChamferParameters> ui;
-    std::unique_ptr<Gui::Gizmos> gizmos;
 
     void setUpUI(PartDesign::Chamfer* pcChamfer);
+
+    Gui::GizmoContainer* gizmoContainer = nullptr;
+    Gui::LinearGizmo* distanceGizmo = nullptr;
+    Gui::LinearGizmo* secondDistanceGizmo = nullptr;
+    Gui::RotationGizmo* angleGizmo = nullptr;
     void setupGizmos(ViewProviderDressUp* vp);
     void setGizmoPositions();
 };

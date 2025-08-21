@@ -180,9 +180,9 @@ private:
     using inherited = RotationGizmo;
 };
 
-class GuiExport Gizmos: public SoBaseKit
+class GuiExport GizmoContainer: public SoBaseKit
 {
-    SO_KIT_HEADER(Gizmos);
+    SO_KIT_HEADER(GizmoContainer);
     SO_KIT_CATALOG_ENTRY_HEADER(annotation);
     SO_KIT_CATALOG_ENTRY_HEADER(pickStyle);
     SO_KIT_CATALOG_ENTRY_HEADER(toggleSwitch);
@@ -190,8 +190,8 @@ class GuiExport Gizmos: public SoBaseKit
 
 public:
     static void initClass();
-    Gizmos();
-    ~Gizmos() override;
+    GizmoContainer();
+    ~GizmoContainer() override;
 
     SoSFBool visible;
 

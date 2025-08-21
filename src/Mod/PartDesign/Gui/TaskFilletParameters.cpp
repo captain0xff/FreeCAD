@@ -209,27 +209,21 @@ void TaskFilletParameters::apply()
 
 void TaskFilletParameters::setupGizmos(ViewProviderDressUp* vp)
 {
-    if (!Gizmos::isEnabled()) {
+    if (!GizmoContainer::isEnabled()) {
         return;
     }
 
-    gizmos = std::make_unique<Gizmos>();
+    radiusGizmo = new Gui::LinearGizmo(ui->filletRadius);
+    radiusGizmo2 = new Gui::LinearGizmo(ui->filletRadius);
 
-    auto radiusGizmo = new Gui::LinearGizmo(ui->filletRadius);
-    auto radiusGizmo2 = new Gui::LinearGizmo(ui->filletRadius);
-
-    gizmos->addGizmo(radiusGizmo);
-    gizmos->addGizmo(radiusGizmo2);
-    gizmos->initGizmos();
+    gizmoContainer = vp->addGizmos({radiusGizmo, radiusGizmo2});
 
     setGizmoPositions();
-
-    vp->attachGizmos(gizmos.get());
 }
 
 void TaskFilletParameters::setGizmoPositions()
 {
-    if (!gizmos) {
+    if (!gizmoContainer) {
         return;
     }
 
@@ -238,20 +232,20 @@ void TaskFilletParameters::setGizmoPositions()
     std::vector<Part::TopoShape> shapes = fillet->getContinuousEdges(baseShape);
 
     if (shapes.size() == 0) {
-        gizmos->visible = false;
+        gizmoContainer->visible = false;
         return;
     }
-    gizmos->visible = true;
+    gizmoContainer->visible = true;
 
     // Attach the arrow to the first edge
     Part::TopoShape edge = shapes[0];
     auto [face1, face2] = getAdjacentFacesFromEdge(edge, baseShape);
 
     DraggerPlacementProps props = getDraggerPlacementFromEdgeAndFace(edge, face1);
-    gizmos->getGizmo(0)->setDraggerPlacement(props.position, props.dir);
+    radiusGizmo->Gizmo::setDraggerPlacement(props.position, props.dir);
 
     props = getDraggerPlacementFromEdgeAndFace(edge, face2);
-    gizmos->getGizmo(1)->setDraggerPlacement(props.position, props.dir);
+    radiusGizmo2->Gizmo::setDraggerPlacement(props.position, props.dir);
 }
 
 //**************************************************************************

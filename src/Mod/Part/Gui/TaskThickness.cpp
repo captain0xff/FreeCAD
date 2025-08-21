@@ -202,8 +202,8 @@ void ThicknessWidget::onFacesButtonToggled(bool on)
         Gui::Selection().clearSelection();
         Gui::Selection().addSelectionGate(new Private::FaceSelection(d->thickness->Faces.getValue()));
 
-        if (gizmos) {
-            gizmos->visible = false;
+        if (gizmoContainer) {
+            gizmoContainer->visible = false;
         }
     }
     else {
@@ -230,8 +230,8 @@ void ThicknessWidget::onFacesButtonToggled(bool on)
         if (d->ui.updateView->isChecked())
             d->thickness->getDocument()->recomputeFeature(d->thickness);
 
-        if (gizmos) {
-            gizmos->visible = true;
+        if (gizmoContainer) {
+            gizmoContainer->visible = true;
             setGizmoPositions();
         }
     }
@@ -310,29 +310,24 @@ void ThicknessWidget::changeEvent(QEvent *e)
 
 void ThicknessWidget::setupGizmos()
 {
-    if (!Gui::Gizmos::isEnabled()) {
+    if (!Gui::GizmoContainer::isEnabled()) {
         return;
     }
 
-    gizmos = std::make_unique<Gui::Gizmos>();
-
-    auto linearGizmo = new Gui::LinearGizmo(d->ui.spinOffset);
-
-    gizmos->addGizmo(linearGizmo);
-    gizmos->initGizmos();
-
-    setGizmoPositions();
+    linearGizmo = new Gui::LinearGizmo(d->ui.spinOffset);
 
     auto vp = Base::freecad_cast<ViewProviderPart*>(
         Gui::Application::Instance->getViewProvider(d->thickness)
     );
     assert(vp);
-    vp->attachGizmos(gizmos.get());
+    gizmoContainer = vp->addGizmos({linearGizmo});
+
+    setGizmoPositions();
 }
 
 void ThicknessWidget::setGizmoPositions()
 {
-    if (!gizmos) {
+    if (!gizmoContainer) {
         return;
     }
 
@@ -341,7 +336,7 @@ void ThicknessWidget::setGizmoPositions()
     auto faces = thickness->Faces.getSubValues(true);
 
     if (faces.size() == 0) {
-        gizmos->visible = false;
+        gizmoContainer->visible = false;
     }
 
     Part::TopoShape face = base.getSubTopoShape(faces[0].c_str());
@@ -352,9 +347,9 @@ void ThicknessWidget::setGizmoPositions()
 
         // The part thickness operation by default goes creates towards outside
         // so -props.dir is taken 
-        gizmos->getGizmo(0)->setDraggerPlacement(props.position, -props.dir);
+        gizmoContainer->getGizmo(0)->setDraggerPlacement(props.position, -props.dir);
 
-        gizmos->visible = true;
+        gizmoContainer->visible = true;
 
         return;
     }

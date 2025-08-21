@@ -36,7 +36,9 @@ class Property;
 }
 
 namespace Gui {
-class Gizmos;
+class LinearGizmo;
+class RotationalGizmo;
+class GizmoContainer;
 }
 
 namespace PartDesign {
@@ -145,8 +147,6 @@ protected:
     void handleLineFaceNameNo();
 
 private:
-    std::unique_ptr<Gui::Gizmos> gizmos;
-
     void selectedReferenceAxis(const Gui::SelectionChanges& msg);
     void selectedFace(const Gui::SelectionChanges& msg);
     void selectedShape(const Gui::SelectionChanges& msg);
@@ -163,6 +163,11 @@ private:
 
     std::vector<std::string> getShapeFaces();
 
+    Gui::GizmoContainer* gizmoContainer = nullptr;
+    Gui::LinearGizmo* lengthGizmo1 = nullptr;
+    Gui::LinearGizmo* lengthGizmo2 = nullptr;
+    Gui::RotationGizmo* taperAngleGizmo1 = nullptr;
+    Gui::RotationGizmo* taperAngleGizmo2 = nullptr;
     void setupGizmos();
     void setGizmoPositions();
 

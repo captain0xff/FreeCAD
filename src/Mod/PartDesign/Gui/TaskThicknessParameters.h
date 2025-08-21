@@ -32,7 +32,8 @@
 class Ui_TaskThicknessParameters;
 
 namespace Gui {
-class Gizmos;
+class LinearGizmo;
+class GizmoContainer;
 }
 
 namespace PartDesign
@@ -81,8 +82,9 @@ private:
 
 private:
     std::unique_ptr<Ui_TaskThicknessParameters> ui;
-    std::unique_ptr<Gui::Gizmos> gizmos;
 
+    Gui::GizmoContainer* gizmoContainer = nullptr;
+    Gui::LinearGizmo* linearGizmo = nullptr;
     void setupGizmos(ViewProviderDressUp* vp);
     void setGizmoPositions();
 };

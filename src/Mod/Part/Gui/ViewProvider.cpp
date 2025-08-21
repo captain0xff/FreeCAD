@@ -43,7 +43,11 @@ using namespace PartGui;
 PROPERTY_SOURCE(PartGui::ViewProviderPart, PartGui::ViewProviderPartExt)  // NOLINT
 
 
-ViewProviderPart::ViewProviderPart() = default;
+ViewProviderPart::ViewProviderPart()
+{   if (Gui::GizmoContainer::isEnabled()) {
+        gizmoContainer = std::make_unique<Gui::GizmoContainer>();
+    }
+}
 
 ViewProviderPart::~ViewProviderPart() = default;
 
@@ -115,24 +119,27 @@ void ViewProviderPart::setEditViewer(Gui::View3DInventorViewer* viewer, int ModN
 {
     ViewProviderPartExt::setEditViewer(viewer, ModNum);
 
-    if (gizmos) {
-        gizmos->setUpAutoScale(viewer->getSoRenderManager()->getCamera());
+    if (gizmoContainer) {
+        gizmoContainer->setUpAutoScale(viewer->getSoRenderManager()->getCamera());
 
         auto originPlacement = App::GeoFeature::getGlobalPlacement(getObject())
             * getObjectPlacement().inverse();
-        gizmos->attachViewer(viewer, originPlacement);
+        gizmoContainer->attachViewer(viewer, originPlacement);
     }
 }
 
-void ViewProviderPart::attachGizmos(Gui::Gizmos* gizmos)
+Gui::GizmoContainer* ViewProviderPart::addGizmos(std::initializer_list<Gui::Gizmo*> gizmos)
 {
-    assert(gizmos);
-    this->gizmos = gizmos;
-}
+    if (!gizmoContainer) {
+        return nullptr;
+    }
 
-void ViewProviderPart::detachGizmos()
-{
-    this->gizmos = nullptr;
+    for (auto gizmo: gizmos) {
+        gizmoContainer->addGizmo(gizmo);
+    }
+    gizmoContainer->initGizmos();
+
+    return gizmoContainer.get();
 }
 
 // ----------------------------------------------------------------------------

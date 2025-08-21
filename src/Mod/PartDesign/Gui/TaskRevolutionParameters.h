@@ -35,6 +35,7 @@ class Property;
 }
 
 namespace Gui {
+class RadialGizmo;
 class Gizmo;
 class ViewProvider;
 class ViewProviderCoordinateSystem;
@@ -124,8 +125,9 @@ private:
      */
     std::vector<std::unique_ptr<App::PropertyLinkSub>> axesInList;
 
-    std::unique_ptr<Gui::Gizmos> gizmos;
-
+    Gui::GizmoContainer* gizmoContainer = nullptr;
+    Gui::RadialGizmo* rotationGizmo = nullptr;
+    Gui::RadialGizmo* rotationGizmo2 = nullptr;
     void setupGizmos(ViewProvider* vp);
     void setGizmoPositions();
 };

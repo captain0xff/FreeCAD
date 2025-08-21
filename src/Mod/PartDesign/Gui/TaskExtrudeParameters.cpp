@@ -1226,42 +1226,22 @@ void TaskExtrudeParameters::handleLineFaceNameNo()
 
 void TaskExtrudeParameters::setupGizmos()
 {
-    if (Gizmos::isEnabled() == false) {
+    if (GizmoContainer::isEnabled() == false) {
         return;
     }
 
-    gizmos = std::make_unique<Gizmos>();
+    lengthGizmo1 = new Gui::LinearGizmo(ui->lengthEdit);
+    lengthGizmo2 = new Gui::LinearGizmo(ui->lengthEdit2);
+    taperAngleGizmo1 = new Gui::RotationGizmo(ui->taperEdit);
+    taperAngleGizmo2 = new Gui::RotationGizmo(ui->taperEdit2);
 
-    auto lengthGizmo1 = new Gui::LinearGizmo(ui->lengthEdit);
-    auto lengthGizmo2 = new Gui::LinearGizmo(ui->lengthEdit2);
-    auto taperAngleGizmo1 = new Gui::RotationGizmo(ui->taperEdit);
-    auto taperAngleGizmo2 = new Gui::RotationGizmo(ui->taperEdit2);
+    connect(ui->checkBoxMidplane, &QCheckBox::toggled, [this](bool checked) {lengthGizmo1->multFactor *= checked? 0.5 : 2; lengthGizmo1->setDragLength(ui->lengthEdit->value().getValue());});
 
-    connect(ui->checkBoxMidplane, &QCheckBox::toggled, [lengthGizmo1, this](bool checked) {lengthGizmo1->multFactor *= checked? 0.5 : 2; lengthGizmo1->setDragLength(ui->lengthEdit->value().getValue());});
+    // connect(ui->changeMode, qOverload<int>(&QComboBox::currentIndexChanged), [this] (int index) {
 
-    connect(ui->changeMode, qOverload<int>(&QComboBox::currentIndexChanged), [taperAngleGizmo1, lengthGizmo1, taperAngleGizmo2, lengthGizmo2] (int index) {
-        switch (static_cast<Mode>(index)) {
-        case Mode::Dimension:
-            lengthGizmo1->getDraggerContainer()->visible = true;
-            lengthGizmo2->getDraggerContainer()->visible = false;
-            taperAngleGizmo1->getDraggerContainer()->visible = true;
-            taperAngleGizmo2->getDraggerContainer()->visible = false;
-            break;
-        case Mode::TwoDimensions:
-            lengthGizmo1->getDraggerContainer()->visible = true;
-            lengthGizmo2->getDraggerContainer()->visible = true;
-            taperAngleGizmo1->getDraggerContainer()->visible = true;
-            taperAngleGizmo2->getDraggerContainer()->visible = true;
-            break;
-        default:
-            lengthGizmo1->getDraggerContainer()->visible = false;
-            lengthGizmo2->getDraggerContainer()->visible = false;
-            taperAngleGizmo1->getDraggerContainer()->visible = false;
-            taperAngleGizmo2->getDraggerContainer()->visible = false;
-        }
-    });
+    // });
 
-    connect(ui->checkBoxReversed, &QCheckBox::toggled, [taperAngleGizmo1, lengthGizmo1, taperAngleGizmo2, lengthGizmo2](bool) {
+    connect(ui->checkBoxReversed, &QCheckBox::toggled, [this](bool) {
         GizmoPlacement placement = lengthGizmo1->getDraggerPlacement();
         SoLinearDraggerContainer* draggerContainer = lengthGizmo1->getDraggerContainer();
         lengthGizmo1->setDraggerPlacement(placement.pos, -draggerContainer->getPointerDirection());
@@ -1280,29 +1260,21 @@ void TaskExtrudeParameters::setupGizmos()
         taperAngleGizmo2->setDraggerPlacement(placement.pos, -taperAngleGizmo2->getDraggerContainer()->getPointerDirection());
     });
 
-    gizmos->addGizmo(lengthGizmo1);
-    gizmos->addGizmo(lengthGizmo2);
-    gizmos->addGizmo(taperAngleGizmo1);
-    gizmos->addGizmo(taperAngleGizmo2);
-    gizmos->initGizmos();
+    gizmoContainer = vp->addGizmos({
+        lengthGizmo1, lengthGizmo2,
+        taperAngleGizmo1, taperAngleGizmo2
+    });
 
     setGizmoPositions();
-
-    vp->attachGizmos(gizmos.get());
 
     ui->changeMode->currentIndexChanged(ui->changeMode->currentIndex());
 }
 
 void TaskExtrudeParameters::setGizmoPositions()
 {
-    if (!gizmos) {
+    if (!gizmoContainer) {
         return;
     }
-
-    auto lengthGizmo1 = gizmos->getGizmo<LinearGizmo>(0);
-    auto lengthGizmo2 = gizmos->getGizmo<LinearGizmo>(1);
-    auto taperAngleGizmo1 = gizmos->getGizmo<RotationGizmo>(2);
-    auto taperAngleGizmo2 = gizmos->getGizmo<RotationGizmo>(3);
 
     auto extrude = getObject<PartDesign::FeatureExtrude>();
     PartDesign::TopoShape shape = extrude->getProfileShape();
@@ -1332,7 +1304,27 @@ void TaskExtrudeParameters::setGizmoPositions()
     lengthGizmo2->multFactor = multFactor;
     lengthGizmo2->setDragLength(ui->lengthEdit2->value().getValue());
 
-    gizmos->calculateScaleAndOrientation();
+    gizmoContainer->calculateScaleAndOrientation();
+
+    switch (static_cast<Mode>(ui->changeMode->currentIndex())) {
+    case Mode::Dimension:
+        lengthGizmo1->getDraggerContainer()->visible = true;
+        lengthGizmo2->getDraggerContainer()->visible = false;
+        taperAngleGizmo1->getDraggerContainer()->visible = true;
+        taperAngleGizmo2->getDraggerContainer()->visible = false;
+        break;
+    case Mode::TwoDimensions:
+        lengthGizmo1->getDraggerContainer()->visible = true;
+        lengthGizmo2->getDraggerContainer()->visible = true;
+        taperAngleGizmo1->getDraggerContainer()->visible = true;
+        taperAngleGizmo2->getDraggerContainer()->visible = true;
+        break;
+    default:
+        lengthGizmo1->getDraggerContainer()->visible = false;
+        lengthGizmo2->getDraggerContainer()->visible = false;
+        taperAngleGizmo1->getDraggerContainer()->visible = false;
+        taperAngleGizmo2->getDraggerContainer()->visible = false;
+    }
 }
 
 TaskDlgExtrudeParameters::TaskDlgExtrudeParameters(PartDesignGui::ViewProviderExtrude* vp)

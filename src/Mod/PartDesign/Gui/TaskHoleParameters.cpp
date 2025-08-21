@@ -406,7 +406,7 @@ void TaskHoleParameters::baseProfileTypeChanged(int index)
         hole->BaseProfileType.setValue(PartDesign::Hole::baseProfileOption_idxToBitmask(index));
         recomputeFeature();
 
-        if (gizmos) {
+        if (gizmoContainer) {
             setGizmoPositions();
         }
     }
@@ -600,10 +600,6 @@ void TaskHoleParameters::taperedChanged()
     if (auto hole = getObject<PartDesign::Hole>()) {
         hole->Tapered.setValue(checked);
         recomputeFeature();
-
-        if (gizmos) {
-            gizmos->getGizmo<RotationGizmo>(1)->getDraggerContainer()->visible = checked;
-        }
     }
 }
 
@@ -613,8 +609,7 @@ void TaskHoleParameters::reversedChanged()
         hole->Reversed.setValue(ui->Reversed->isChecked());
         recomputeFeature();
 
-        if (gizmos) {
-            auto holeDepthGizmo = gizmos->getGizmo<LinearGizmo>(0);
+        if (gizmoContainer) {
             holeDepthGizmo->reverseDir();
         }
     }
@@ -1170,20 +1165,15 @@ void TaskHoleParameters::updateHoleCutLimits(PartDesign::Hole* hole)
 
 void TaskHoleParameters::setupGizmos(ViewProviderHole* vp)
 {
-    if (!Gizmos::isEnabled()) {
+    if (!GizmoContainer::isEnabled()) {
         return;
     }
 
-    gizmos = std::make_unique<Gizmos>();
+    holeDepthGizmo = new LinearGizmo(ui->Depth);
 
-    auto holeDepthGizmo = new LinearGizmo(ui->Depth);
-
-    gizmos->addGizmo(holeDepthGizmo);
-    gizmos->initGizmos();
+    gizmoContainer = vp->addGizmos({holeDepthGizmo});
 
     setGizmoPositions();
-
-    vp->attachGizmos(gizmos.get());
 }
 
 std::vector<Base::Vector3d> getHolePositionFromShape(const Part::TopoShape& profileshape, const long baseProfileType)
@@ -1237,7 +1227,7 @@ std::vector<Base::Vector3d> getHolePositionFromShape(const Part::TopoShape& prof
 
 void TaskHoleParameters::setGizmoPositions()
 {
-    if (!gizmos) {
+    if (!gizmoContainer) {
         return;
     }
 
@@ -1252,12 +1242,10 @@ void TaskHoleParameters::setGizmoPositions()
     std::vector<Base::Vector3d> holePositions = getHolePositionFromShape(profileShape, hole->BaseProfileType.getValue());
 
     if (holePositions.size() == 0) {
-        gizmos->visible = false;
+        gizmoContainer->visible = false;
         return;
     }
-    gizmos->visible = true;
-
-    auto holeDepthGizmo = gizmos->getGizmo<LinearGizmo>(0);
+    gizmoContainer->visible = true;
 
     holeDepthGizmo->Gizmo::setDraggerPlacement(holePositions[0] - ui->HoleCutDepth->value().getValue() * dir, -dir);
 }

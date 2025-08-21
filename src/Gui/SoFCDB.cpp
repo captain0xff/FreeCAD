@@ -161,7 +161,7 @@ void Gui::SoFCDB::init()
     SoRotatorGeometryBaseKit        ::initClass();
     SoRotatorBase                   ::initClass();
     SoToggleSwitch                  ::initClass();
-    Gizmos                          ::initClass();
+    GizmoContainer                  ::initClass();
     SmSwitchboard                   ::initClass();
     SoFCSeparator                   ::initClass();
     SoFCSelectionRoot               ::initClass();

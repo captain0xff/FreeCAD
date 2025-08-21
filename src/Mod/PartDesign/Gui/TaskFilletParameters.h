@@ -32,7 +32,8 @@
 class Ui_TaskFilletParameters;
 
 namespace Gui {
-class Gizmos;
+class LinearGizmo;
+class GizmoContainer;
 }
 
 namespace PartDesignGui {
@@ -61,8 +62,10 @@ protected:
 
 private:
     std::unique_ptr<Ui_TaskFilletParameters> ui;
-    std::unique_ptr<Gui::Gizmos> gizmos;
 
+    Gui::GizmoContainer* gizmoContainer = nullptr;
+    Gui::LinearGizmo* radiusGizmo = nullptr;
+    Gui::LinearGizmo* radiusGizmo2 = nullptr;
     void setupGizmos(ViewProviderDressUp* vp);
     void setGizmoPositions();
 };

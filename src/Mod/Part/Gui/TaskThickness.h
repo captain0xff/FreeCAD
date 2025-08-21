@@ -28,7 +28,8 @@
 #include <Gui/TaskView/TaskDialog.h>
 
 namespace Gui {
-class Gizmos;
+class LinearGizmo;
+class GizmoContainer;
 }
 
 namespace Part { class Thickness; }
@@ -58,8 +59,9 @@ private:
 
 private:
     void changeEvent(QEvent *e) override;
-    std::unique_ptr<Gui::Gizmos> gizmos;
 
+    Gui::GizmoContainer* gizmoContainer = nullptr;
+    Gui::LinearGizmo* linearGizmo = nullptr;
     void setupGizmos();
     void setGizmoPositions();
 

@@ -62,10 +62,6 @@ protected:
 
 private:
     std::unique_ptr<Ui_TaskDraftParameters> ui;
-    std::unique_ptr<Gui::Gizmos> gizmos;
-
-    void setupGizmos(ViewProviderDressUp* vp);
-    void setGizmoPositions();
 };
 
 /// simulation dialog for the TaskView

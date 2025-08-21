@@ -24,6 +24,8 @@
 #ifndef PARTGUI_VIEWPROVIDERPART_H
 #define PARTGUI_VIEWPROVIDERPART_H
 
+#include <utility>
+
 #include <Gui/ViewProviderBuilder.h>
 #include <Mod/Part/Gui/ViewProviderExt.h>
 
@@ -31,7 +33,8 @@ class SoSeparator;
 
 namespace Gui
 {
-class Gizmos;
+class Gizmo;
+class GizmoContainer;
 }
 
 namespace Part { struct ShapeHistory; }
@@ -58,8 +61,7 @@ public:
     ~ViewProviderPart() override;
     bool doubleClicked() override;
 
-    void attachGizmos(Gui::Gizmos* gizmos);
-    void detachGizmos();
+    Gui::GizmoContainer* addGizmos(std::initializer_list<Gui::Gizmo*> gizmos);
 
 protected:
     void applyColor(const Part::ShapeHistory& hist,
@@ -74,7 +76,7 @@ protected:
     void setEditViewer(Gui::View3DInventorViewer* viewer, int ModNum) override;
 
 private:
-    Gui::Gizmos* gizmos = nullptr;
+    std::unique_ptr<Gui::GizmoContainer> gizmoContainer = nullptr;
 };
 
 } // namespace PartGui

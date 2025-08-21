@@ -120,20 +120,20 @@ void LinearGizmo::uninitDragger()
 
 GizmoPlacement LinearGizmo::getDraggerPlacement()
 {
-    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
+    assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
     return {draggerContainer->translation.getValue(), draggerContainer->getPointerDirection()};
 }
 
 void LinearGizmo::setDraggerPlacement(const SbVec3f& pos, const SbVec3f& dir)
 {
-    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
+    assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
     draggerContainer->translation = pos;
     draggerContainer->setPointerDirection(dir);
 }
 
 void LinearGizmo::setDraggerPlacement(Base::Placement placement)
 {
-    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
+    assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
     draggerContainer->translation = Base::convertTo<SbVec3f>(placement.getPosition());
     draggerContainer->rotation = Base::convertTo<SbRotation>(placement.getRotation());
 }
@@ -165,7 +165,7 @@ void LinearGizmo::setGeometryScale(float scale)
 
 SoLinearDraggerContainer* LinearGizmo::getDraggerContainer()
 {
-    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
+    assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
     return draggerContainer;
 }
 
@@ -276,13 +276,13 @@ void RotationGizmo::uninitDragger()
 
 GizmoPlacement RotationGizmo::getDraggerPlacement()
 {
-    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
+    assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
     return {draggerContainer->translation.getValue(), draggerContainer->getPointerDirection()};
 }
 
 void RotationGizmo::setDraggerPlacement(const SbVec3f& pos, const SbVec3f& dir)
 {
-    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
+    assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
     draggerContainer->translation = pos;
     draggerContainer->setPointerDirection(dir);
 }
@@ -358,7 +358,7 @@ void RotationGizmo::setGeometryScale(float scale)
 
 SoRotationDraggerContainer* RotationGizmo::getDraggerContainer()
 {
-    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
+    assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
     return draggerContainer;
 }
 
@@ -409,7 +409,7 @@ void RotationGizmo::orientAlongCamera(SoCamera* camera)
         return;
     }
 
-    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
+    assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
     draggerContainer->setArcNormalDirection(proj);
 }
 
@@ -492,16 +492,16 @@ void RadialGizmo::flipArrow()
     rotator->flipArrow();
 }
 
-SO_KIT_SOURCE(Gizmos)
+SO_KIT_SOURCE(GizmoContainer)
 
-void Gizmos::initClass()
+void GizmoContainer::initClass()
 {
-    SO_KIT_INIT_CLASS(Gizmos, SoBaseKit, "BaseKit");
+    SO_KIT_INIT_CLASS(GizmoContainer, SoBaseKit, "BaseKit");
 }
 
-Gizmos::Gizmos()
+GizmoContainer::GizmoContainer()
 {
-    SO_KIT_CONSTRUCTOR(Gizmos);
+    SO_KIT_CONSTRUCTOR(GizmoContainer);
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_OPENBSD)
     this->ref();
@@ -524,14 +524,14 @@ Gizmos::Gizmos()
 
     setPart("geometry", new SoSeparator);
 
-    cameraSensor.setFunction(&Gizmos::cameraChangeCallback);
+    cameraSensor.setFunction(&GizmoContainer::cameraChangeCallback);
     cameraSensor.setData(this);
 
     cameraPositionSensor.setData(this);
     cameraPositionSensor.setFunction(cameraPositionChangeCallback);
 }
 
-Gizmos::~Gizmos()
+GizmoContainer::~GizmoContainer()
 {
     cameraSensor.setData(nullptr);
     cameraSensor.detach();
@@ -542,7 +542,7 @@ Gizmos::~Gizmos()
     uninitGizmos();
 }
 
-void Gizmos::initGizmos()
+void GizmoContainer::initGizmos()
 {
     auto geometry = SO_GET_ANY_PART(this, "geometry", SoSeparator);
     for (auto gizmo: gizmos) {
@@ -550,7 +550,7 @@ void Gizmos::initGizmos()
     }
 }
 
-void Gizmos::uninitGizmos()
+void GizmoContainer::uninitGizmos()
 {
     for (auto gizmo: gizmos) {
         gizmo->uninitDragger();
@@ -559,13 +559,13 @@ void Gizmos::uninitGizmos()
     gizmos.clear();
 }
 
-void Gizmos::addGizmo(Gizmo* gizmo)
+void GizmoContainer::addGizmo(Gizmo* gizmo)
 {
     assert(std::ranges::find(gizmos, gizmo) == gizmos.end() && "this gizmo is already added!");
     gizmos.push_back(gizmo);
 }
 
-void Gizmos::attachViewer(Gui::View3DInventorViewer* viewer, Base::Placement &origin)
+void GizmoContainer::attachViewer(Gui::View3DInventorViewer* viewer, Base::Placement &origin)
 {
     if (!viewer) {
         return;
@@ -578,7 +578,7 @@ void Gizmos::attachViewer(Gui::View3DInventorViewer* viewer, Base::Placement &or
     viewer->setupEditingRoot(annotation, &mat);
 }
 
-void Gizmos::setUpAutoScale(SoCamera* cameraIn)
+void GizmoContainer::setUpAutoScale(SoCamera* cameraIn)
 {
     if (cameraIn->getTypeId() == SoOrthographicCamera::getClassTypeId()) {
         auto localCamera = dynamic_cast<SoOrthographicCamera*>(cameraIn);
@@ -597,7 +597,7 @@ void Gizmos::setUpAutoScale(SoCamera* cameraIn)
     }
 }
 
-void Gizmos::calculateScaleAndOrientation()
+void GizmoContainer::calculateScaleAndOrientation()
 {
     if (cameraSensor.getAttachedField()) {
         cameraChangeCallback(this, nullptr);
@@ -605,10 +605,10 @@ void Gizmos::calculateScaleAndOrientation()
     }
 }
 
-void Gizmos::cameraChangeCallback(void* data, SoSensor*)
+void GizmoContainer::cameraChangeCallback(void* data, SoSensor*)
 {
     assert(data);
-    auto sudoThis = static_cast<Gizmos*>(data);
+    auto sudoThis = static_cast<GizmoContainer*>(data);
 
     SoField* field = sudoThis->cameraSensor.getAttachedField();
     if (!field) {
@@ -624,10 +624,10 @@ void Gizmos::cameraChangeCallback(void* data, SoSensor*)
     }
 }
 
-void Gizmos::cameraPositionChangeCallback(void* data, SoSensor*)
+void GizmoContainer::cameraPositionChangeCallback(void* data, SoSensor*)
 {
     assert(data);
-    auto sudoThis = static_cast<Gizmos*>(data);
+    auto sudoThis = static_cast<GizmoContainer*>(data);
 
     SoField* field = sudoThis->cameraSensor.getAttachedField();
     if (field) {
@@ -639,7 +639,7 @@ void Gizmos::cameraPositionChangeCallback(void* data, SoSensor*)
     }
 }
 
-bool Gizmos::isEnabled()
+bool GizmoContainer::isEnabled()
 {
     static Base::Reference<ParameterGrp> hGrp = App::GetApplication()
         .GetUserParameter()

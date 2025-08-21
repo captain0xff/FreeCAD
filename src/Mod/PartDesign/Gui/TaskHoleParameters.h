@@ -34,7 +34,8 @@ class Property;
 }
 
 namespace Gui {
-class Gizmos;
+class LinearGizmo;
+class GizmoContainer;
 class ViewProvider;
 }
 
@@ -145,8 +146,9 @@ private:
     bool isApplying;
     QWidget* proxy;
     std::unique_ptr<Ui_TaskHoleParameters> ui;
-    std::unique_ptr<Gui::Gizmos> gizmos;
 
+    Gui::GizmoContainer* gizmoContainer = nullptr;
+    Gui::LinearGizmo* holeDepthGizmo = nullptr;
     void setupGizmos(ViewProviderHole* vp);
     void setGizmoPositions();
 };
