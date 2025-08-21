@@ -359,8 +359,10 @@ void TaskChamferParameters::setupGizmos(ViewProviderDressUp* vp)
     auto angleGizmo = new Gui::RotationGizmo(ui->chamferAngle);
 
     connect(ui->chamferType, qOverload<int>(&QComboBox::currentIndexChanged), [this, secondDistanceGizmo, angleGizmo] (int index) {
-        switch (index) {
-            case 0:
+        auto type = static_cast<Part::ChamferType>(index);
+
+        switch (type) {
+            case Part::ChamferType::equalDistance:
                 secondDistanceGizmo->getDraggerContainer()->visible = true;
                 angleGizmo->getDraggerContainer()->visible = false;
 
@@ -368,7 +370,7 @@ void TaskChamferParameters::setupGizmos(ViewProviderDressUp* vp)
                 secondDistanceGizmo->setDragLength(ui->chamferSize->value().getValue());
 
                 break;
-            case 1:
+            case Part::ChamferType::twoDistances:
                 secondDistanceGizmo->getDraggerContainer()->visible = true;
                 angleGizmo->getDraggerContainer()->visible = false;
 
@@ -376,7 +378,7 @@ void TaskChamferParameters::setupGizmos(ViewProviderDressUp* vp)
                 secondDistanceGizmo->setDragLength(ui->chamferSize2->value().getValue());
 
                 break;
-            case 2:
+            case Part::ChamferType::distanceAngle:
                 secondDistanceGizmo->getDraggerContainer()->visible = false;
                 angleGizmo->getDraggerContainer()->visible = true;
 

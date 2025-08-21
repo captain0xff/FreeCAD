@@ -323,7 +323,9 @@ void ThicknessWidget::setupGizmos()
 
     setGizmoPositions();
 
-    auto vp = dynamic_cast<ViewProviderPart*>(Gui::Application::Instance->getViewProvider(d->thickness));
+    auto vp = Base::freecad_cast<ViewProviderPart*>(
+        Gui::Application::Instance->getViewProvider(d->thickness)
+    );
     assert(vp);
     vp->attachGizmos(gizmos.get());
 }

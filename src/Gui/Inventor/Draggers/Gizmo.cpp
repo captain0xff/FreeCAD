@@ -36,6 +36,7 @@
 #include <Base/Converter.h>
 #include <Base/Parameter.h>
 #include <Base/Precision.h>
+#include <Base/Tools.h>
 #include <Document.h>
 #include <Gui/Inventor/So3DAnnotation.h>
 #include <Gui/Inventor/SoToggleSwitch.h>
@@ -80,21 +81,18 @@ SoInteractionKit* LinearGizmo::initDragger()
 
     dragger->addStartCallback(
         [] (void* data, SoDragger*) {
-            assert(data);
             static_cast<LinearGizmo*>(data)->draggingStarted();
         },
         this
     );
     dragger->addFinishCallback(
         [] (void* data, SoDragger*) {
-            assert(data);
             static_cast<LinearGizmo*>(data)->draggingFinished();
         },
         this
     );
     dragger->addMotionCallback(
         [] (void* data, SoDragger*) {
-            assert(data);
             static_cast<LinearGizmo*>(data)->draggingContinued();
         },
         this
@@ -122,20 +120,20 @@ void LinearGizmo::uninitDragger()
 
 GizmoPlacement LinearGizmo::getDraggerPlacement()
 {
-    assert(draggerContainer);
+    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
     return {draggerContainer->translation.getValue(), draggerContainer->getPointerDirection()};
 }
 
 void LinearGizmo::setDraggerPlacement(const SbVec3f& pos, const SbVec3f& dir)
 {
-    assert(draggerContainer);
+    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
     draggerContainer->translation = pos;
     draggerContainer->setPointerDirection(dir);
 }
 
 void LinearGizmo::setDraggerPlacement(Base::Placement placement)
 {
-    assert(draggerContainer);
+    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
     draggerContainer->translation = Base::convertTo<SbVec3f>(placement.getPosition());
     draggerContainer->rotation = Base::convertTo<SbRotation>(placement.getRotation());
 }
@@ -167,7 +165,7 @@ void LinearGizmo::setGeometryScale(float scale)
 
 SoLinearDraggerContainer* LinearGizmo::getDraggerContainer()
 {
-    assert(draggerContainer);
+    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
     return draggerContainer;
 }
 
@@ -244,21 +242,18 @@ SoInteractionKit* RotationGizmo::initDragger()
 
     dragger->addStartCallback(
         [] (void* data, SoDragger*) {
-            assert(data);
             static_cast<RotationGizmo*>(data)->draggingStarted();
         },
         this
     );
     dragger->addFinishCallback(
         [] (void* data, SoDragger*) {
-            assert(data);
             static_cast<RotationGizmo*>(data)->draggingFinished();
         },
         this
     );
     dragger->addMotionCallback(
         [] (void* data, SoDragger*) {
-            assert(data);
             static_cast<RotationGizmo*>(data)->draggingContinued();
         },
         this
@@ -281,13 +276,13 @@ void RotationGizmo::uninitDragger()
 
 GizmoPlacement RotationGizmo::getDraggerPlacement()
 {
-    assert(draggerContainer);
+    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
     return {draggerContainer->translation.getValue(), draggerContainer->getPointerDirection()};
 }
 
 void RotationGizmo::setDraggerPlacement(const SbVec3f& pos, const SbVec3f& dir)
 {
-    assert(draggerContainer);
+    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
     draggerContainer->translation = pos;
     draggerContainer->setPointerDirection(dir);
 }
@@ -313,9 +308,7 @@ void RotationGizmo::placeOverLinearGizmo(LinearGizmo* gizmo)
 
 void RotationGizmo::translationSensorCB(void* data, SoSensor* sensor)
 {
-    assert(data);
     auto sudoThis = static_cast<RotationGizmo*>(data);
-    assert(sensor);
     auto translationSensor = static_cast<SoFieldSensor*>(sensor);
 
     GizmoPlacement placement = sudoThis->linearGizmo->getDraggerPlacement();
@@ -365,7 +358,7 @@ void RotationGizmo::setGeometryScale(float scale)
 
 SoRotationDraggerContainer* RotationGizmo::getDraggerContainer()
 {
-    assert(draggerContainer);
+    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
     return draggerContainer;
 }
 
@@ -387,58 +380,13 @@ void RotationGizmo::draggingFinished()
     }
 }
 
-double normalizeIn360(double value)
-{
-    value = std::fmod(value, 360.0);
-    if (value < 0.0) {
-        value += 360.0;
-    }
-
-    return value;
-}
-
-double angularDist(double v1, double v2)
-{
-    return std::min(std::fabs(v1 - v2), 360 - std::fabs(v1 - v2));
-}
-
-// Returns a value between [0, 360) or (-180, 180] depending on if the
-// minimum value was positive or negetive. This is done because the taper angle
-// values in FreeCAD usually treat values like -10 and 350 differently
-double clampAngle(double value, double min, double max)
-{
-    value = normalizeIn360(value);
-    double nMin = normalizeIn360(min);
-    double nMax = normalizeIn360(max);
-
-    if (std::abs(nMax - nMin) > Base::Precision::Confusion()) {
-        if (nMax > nMin) {
-            if (value < nMin || value > nMax) {
-                value = angularDist(value, nMin) > angularDist(value, nMax)? nMax : nMin;
-            }
-        } else {
-            if (value < nMin && value > nMax) {
-                value = angularDist(value, nMin) > angularDist(value, nMax)? nMax : nMin;
-            }
-        }
-    }
-
-    if (min >= 0.0) {
-        // Return in [0, 360)
-        return value;
-    }
-
-    // Map to (-180, 180]
-    if (value > 180.0) {
-        value = value - 360;
-    }
-    return value;
-}
-
 void RotationGizmo::draggingContinued()
 {
     double value = initialValue + getRotAngle();
-    value = clampAngle(value, property->minimum(), property->maximum());
+    value = Base::clampAngle(
+        value, property->minimum(), property->maximum(),
+        Base::Precision::Confusion()
+    );
 
     property->setValue(value);
     setRotAngle(value);
@@ -461,7 +409,7 @@ void RotationGizmo::orientAlongCamera(SoCamera* camera)
         return;
     }
 
-    assert(draggerContainer);
+    assert(draggerContainer && "Forgot to call Gizmos::initGizmos?");
     draggerContainer->setArcNormalDirection(proj);
 }
 
