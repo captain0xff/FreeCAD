@@ -600,8 +600,9 @@ void TaskRevolutionParameters::onMidplane(bool on)
         recomputeFeature();
 
         if (gizmoContainer) {
-            rotationGizmo->multFactor *= on? 0.5: 2;
-            rotationGizmo->setRotAngle(ui->revolveAngle->value().getValue());
+            rotationGizmo->setMultFactor(
+                rotationGizmo->getMultFactor() * (on? 0.5: 2)
+            );
         }
     }
 }
@@ -613,13 +614,7 @@ void TaskRevolutionParameters::onReversed(bool on)
         recomputeFeature();
 
         if (gizmoContainer) {
-            rotationGizmo->multFactor *= -1;
-            rotationGizmo->flipArrow();
-            rotationGizmo->setRotAngle(ui->revolveAngle->value().getValue());
-
-            rotationGizmo->multFactor *= -1;
-            rotationGizmo->flipArrow();
-            rotationGizmo->setRotAngle(ui->revolveAngle2->value().getValue());
+            reverseGizmoDir();
         }
     }
 }
@@ -632,36 +627,27 @@ void TaskRevolutionParameters::onModeChanged(int index)
     switch (static_cast<PartDesign::Revolution::RevolMethod>(index)) {
     case PartDesign::Revolution::RevolMethod::Dimension:
         propEnum->setValue("Angle");
-        if (gizmoContainer) {
-            gizmoContainer->visible = true;
-            rotationGizmo->getDraggerContainer()->visible = true;
-            rotationGizmo2->getDraggerContainer()->visible = false;
-        }
         break;
     case PartDesign::Revolution::RevolMethod::ToLast:
         propEnum->setValue(isGroove ? "ThroughAll" : "UpToLast");
-        if (gizmoContainer) { gizmoContainer->visible = false; }
         break;
     case PartDesign::Revolution::RevolMethod::ToFirst:
         propEnum->setValue("UpToFirst");
-        if (gizmoContainer) { gizmoContainer->visible = false; }
         break;
     case PartDesign::Revolution::RevolMethod::ToFace:
         propEnum->setValue("UpToFace");
-        if (gizmoContainer) { gizmoContainer->visible = false; }
         break;
     case PartDesign::Revolution::RevolMethod::TwoDimensions:
         propEnum->setValue("TwoAngles");
-        if (gizmoContainer) {
-            gizmoContainer->visible = true;
-            rotationGizmo->getDraggerContainer()->visible = true;
-            rotationGizmo2->getDraggerContainer()->visible = true;
-        }
         break;
     }
 
     updateUI(index);
     recomputeFeature();
+
+    if (gizmoContainer) {
+        setGizmoVisibility();
+    }
 }
 
 void TaskRevolutionParameters::getReferenceAxis(App::DocumentObject*& obj, std::vector<std::string>& sub) const
@@ -752,16 +738,15 @@ void TaskRevolutionParameters::setupGizmos(ViewProvider* vp)
     rotationGizmo = new Gui::RadialGizmo(ui->revolveAngle);
     rotationGizmo2 = new Gui::RadialGizmo(ui->revolveAngle2);
 
-    gizmoContainer = vp->addGizmos({rotationGizmo, rotationGizmo2});
+    gizmoContainer = GizmoContainer::createGizmo({rotationGizmo, rotationGizmo2}, vp);
+    rotationGizmo->flipArrow();
+    rotationGizmo2->flipArrow();
 
     setGizmoPositions();
-
-    ui->changeMode->currentIndexChanged(ui->changeMode->currentIndex());
-
     if (getReversed()) {
-        rotationGizmo->multFactor *= -1;
-        rotationGizmo->setRotAngle(ui->revolveAngle->value().getValue());
+        reverseGizmoDir();
     }
+    setGizmoVisibility();
 }
 
 void TaskRevolutionParameters::setGizmoPositions()
@@ -798,9 +783,37 @@ void TaskRevolutionParameters::setGizmoPositions()
     rotationGizmo->Gizmo::setDraggerPlacement(basePos + axisComp, normalComp);
     rotationGizmo->getDraggerContainer()->setArcNormalDirection(Base::convertTo<SbVec3f>(axisDir));
 
-    rotationGizmo->Gizmo::setDraggerPlacement(basePos + axisComp, normalComp);
-    rotationGizmo->getDraggerContainer()->setArcNormalDirection(Base::convertTo<SbVec3f>(axisDir));
+    rotationGizmo2->Gizmo::setDraggerPlacement(basePos + axisComp, normalComp);
+    rotationGizmo2->getDraggerContainer()->setArcNormalDirection(Base::convertTo<SbVec3f>(-axisDir));
+}
+
+void TaskRevolutionParameters::reverseGizmoDir()
+{
+    rotationGizmo->setMultFactor(-rotationGizmo->getMultFactor());
     rotationGizmo->flipArrow();
+
+    rotationGizmo2->setMultFactor(-rotationGizmo2->getMultFactor());
+    rotationGizmo2->flipArrow();
+}
+
+void TaskRevolutionParameters::setGizmoVisibility()
+{
+    auto type = static_cast<PartDesign::Revolution::RevolMethod>(ui->changeMode->currentIndex());
+
+    switch (type) {
+        case PartDesign::Revolution::RevolMethod::Dimension:
+            gizmoContainer->visible = true;
+            rotationGizmo->getDraggerContainer()->visible = true;
+            rotationGizmo2->getDraggerContainer()->visible = false;
+            break;
+        case PartDesign::Revolution::RevolMethod::TwoDimensions:
+            gizmoContainer->visible = true;
+            rotationGizmo->getDraggerContainer()->visible = true;
+            rotationGizmo2->getDraggerContainer()->visible = true;
+            break;
+        default:
+            gizmoContainer->visible = false;
+    }
 }
 
 //**************************************************************************

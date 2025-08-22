@@ -83,7 +83,7 @@ private:
 private:
     std::unique_ptr<Ui_TaskThicknessParameters> ui;
 
-    Gui::GizmoContainer* gizmoContainer = nullptr;
+    std::unique_ptr<Gui::GizmoContainer> gizmoContainer;
     Gui::LinearGizmo* linearGizmo = nullptr;
     void setupGizmos(ViewProviderDressUp* vp);
     void setGizmoPositions();

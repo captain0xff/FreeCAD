@@ -147,7 +147,7 @@ private:
     QWidget* proxy;
     std::unique_ptr<Ui_TaskHoleParameters> ui;
 
-    Gui::GizmoContainer* gizmoContainer = nullptr;
+    std::unique_ptr<Gui::GizmoContainer> gizmoContainer;
     Gui::LinearGizmo* holeDepthGizmo = nullptr;
     void setupGizmos(ViewProviderHole* vp);
     void setGizmoPositions();

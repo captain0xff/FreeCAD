@@ -33,7 +33,6 @@ class SoSeparator;
 
 namespace Gui
 {
-class Gizmo;
 class GizmoContainer;
 }
 
@@ -61,7 +60,7 @@ public:
     ~ViewProviderPart() override;
     bool doubleClicked() override;
 
-    Gui::GizmoContainer* addGizmos(std::initializer_list<Gui::Gizmo*> gizmos);
+    void setGizmoContainer(Gui::GizmoContainer* gizmoContainer);
 
 protected:
     void applyColor(const Part::ShapeHistory& hist,
@@ -76,7 +75,7 @@ protected:
     void setEditViewer(Gui::View3DInventorViewer* viewer, int ModNum) override;
 
 private:
-    std::unique_ptr<Gui::GizmoContainer> gizmoContainer = nullptr;
+    Gui::GizmoContainer* gizmoContainer;
 };
 
 } // namespace PartGui

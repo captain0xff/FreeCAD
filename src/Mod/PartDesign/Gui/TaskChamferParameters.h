@@ -78,7 +78,7 @@ private:
 
     void setUpUI(PartDesign::Chamfer* pcChamfer);
 
-    Gui::GizmoContainer* gizmoContainer = nullptr;
+    std::unique_ptr<Gui::GizmoContainer> gizmoContainer;
     Gui::LinearGizmo* distanceGizmo = nullptr;
     Gui::LinearGizmo* secondDistanceGizmo = nullptr;
     Gui::RotationGizmo* angleGizmo = nullptr;

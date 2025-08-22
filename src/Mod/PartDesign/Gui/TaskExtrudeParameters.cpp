@@ -962,6 +962,10 @@ void TaskExtrudeParameters::onReversedChanged(bool on)
         // update the direction
         tryRecomputeFeature();
         updateDirectionEdits();
+
+        if (gizmoContainer) {
+            reverseGizmoDir();
+        }
     }
 }
 
@@ -1235,39 +1239,25 @@ void TaskExtrudeParameters::setupGizmos()
     taperAngleGizmo1 = new Gui::RotationGizmo(ui->taperEdit);
     taperAngleGizmo2 = new Gui::RotationGizmo(ui->taperEdit2);
 
-    connect(ui->checkBoxMidplane, &QCheckBox::toggled, [this](bool checked) {lengthGizmo1->multFactor *= checked? 0.5 : 2; lengthGizmo1->setDragLength(ui->lengthEdit->value().getValue());});
-
-    // connect(ui->changeMode, qOverload<int>(&QComboBox::currentIndexChanged), [this] (int index) {
-
-    // });
-
-    connect(ui->checkBoxReversed, &QCheckBox::toggled, [this](bool) {
-        GizmoPlacement placement = lengthGizmo1->getDraggerPlacement();
-        SoLinearDraggerContainer* draggerContainer = lengthGizmo1->getDraggerContainer();
-        lengthGizmo1->setDraggerPlacement(placement.pos, -draggerContainer->getPointerDirection());
-        // This is to ensure that the rotation dragger is positioned correctly after the reverse
-        draggerContainer->getDragger()->translation.touch();
-
-        placement = lengthGizmo2->getDraggerPlacement();
-        draggerContainer = lengthGizmo2->getDraggerContainer();
-        lengthGizmo2->setDraggerPlacement(placement.pos, -draggerContainer->getPointerDirection());
-        draggerContainer->getDragger()->translation.touch();
-
-        placement = taperAngleGizmo1->getDraggerPlacement();
-        taperAngleGizmo1->setDraggerPlacement(placement.pos, -taperAngleGizmo1->getDraggerContainer()->getPointerDirection());
-
-        placement = taperAngleGizmo2->getDraggerPlacement();
-        taperAngleGizmo2->setDraggerPlacement(placement.pos, -taperAngleGizmo2->getDraggerContainer()->getPointerDirection());
+    connect(ui->changeMode, qOverload<int>(&QComboBox::currentIndexChanged), [this] (int) {
+        setGizmoVisibility();
     });
 
-    gizmoContainer = vp->addGizmos({
+    connect(ui->checkBoxMidplane, &QCheckBox::toggled, [this](bool checked) {
+        lengthGizmo1->setMultFactor(lengthGizmo1->getMultFactor() * (checked? 0.5 : 2));
+    });
+
+    gizmoContainer = GizmoContainer::createGizmo({
         lengthGizmo1, lengthGizmo2,
         taperAngleGizmo1, taperAngleGizmo2
-    });
+    }, vp);
 
     setGizmoPositions();
 
-    ui->changeMode->currentIndexChanged(ui->changeMode->currentIndex());
+    if (getReversed()) {
+        reverseGizmoDir();
+    }
+    setGizmoVisibility();
 }
 
 void TaskExtrudeParameters::setGizmoPositions()
@@ -1298,14 +1288,37 @@ void TaskExtrudeParameters::setGizmoPositions()
         multFactor /= lengthFactor;
     }
 
-    lengthGizmo1->multFactor = multFactor;
-    lengthGizmo1->setDragLength(ui->lengthEdit->value().getValue());
+    lengthGizmo1->setMultFactor(multFactor);
 
-    lengthGizmo2->multFactor = multFactor;
-    lengthGizmo2->setDragLength(ui->lengthEdit2->value().getValue());
+    lengthGizmo2->setMultFactor(multFactor);
 
     gizmoContainer->calculateScaleAndOrientation();
+}
 
+void TaskExtrudeParameters::reverseGizmoDir()
+{
+    GizmoPlacement placement = lengthGizmo1->getDraggerPlacement();
+    SoLinearDraggerContainer* draggerContainer = lengthGizmo1->getDraggerContainer();
+    lengthGizmo1->reverseDir();
+    // This is to ensure that the rotation dragger is positioned correctly after the reverse
+    draggerContainer->getDragger()->translation.touch();
+
+    placement = lengthGizmo2->getDraggerPlacement();
+    draggerContainer = lengthGizmo2->getDraggerContainer();
+    lengthGizmo2->reverseDir();
+    draggerContainer->getDragger()->translation.touch();
+
+    placement = taperAngleGizmo1->getDraggerPlacement();
+    taperAngleGizmo1->setDraggerPlacement(placement.pos, -taperAngleGizmo1->getDraggerContainer()->getPointerDirection());
+
+    placement = taperAngleGizmo2->getDraggerPlacement();
+    taperAngleGizmo2->setDraggerPlacement(placement.pos, -taperAngleGizmo2->getDraggerContainer()->getPointerDirection());
+
+    gizmoContainer->calculateScaleAndOrientation();
+}
+
+void TaskExtrudeParameters::setGizmoVisibility()
+{
     switch (static_cast<Mode>(ui->changeMode->currentIndex())) {
     case Mode::Dimension:
         lengthGizmo1->getDraggerContainer()->visible = true;

@@ -130,7 +130,7 @@ private:
      */
     std::vector<std::unique_ptr<App::PropertyLinkSub>> axesInList;
 
-    Gui::GizmoContainer* gizmoContainer = nullptr;
+    std::unique_ptr<Gui::GizmoContainer> gizmoContainer;
     Gui::LinearGizmo* heightGizmo = nullptr;
     void setupGizmos(ViewProviderHelix* vp);
     void setGizmoPositions();

@@ -320,7 +320,7 @@ void ThicknessWidget::setupGizmos()
         Gui::Application::Instance->getViewProvider(d->thickness)
     );
     assert(vp);
-    gizmoContainer = vp->addGizmos({linearGizmo});
+    gizmoContainer = Gui::GizmoContainer::createGizmo({linearGizmo}, vp);
 
     setGizmoPositions();
 }
@@ -347,7 +347,7 @@ void ThicknessWidget::setGizmoPositions()
 
         // The part thickness operation by default goes creates towards outside
         // so -props.dir is taken 
-        gizmoContainer->getGizmo(0)->setDraggerPlacement(props.position, -props.dir);
+        linearGizmo->Gizmo::setDraggerPlacement(props.position, -props.dir);
 
         gizmoContainer->visible = true;
 

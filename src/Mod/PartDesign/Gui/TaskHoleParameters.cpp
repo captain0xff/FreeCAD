@@ -406,9 +406,7 @@ void TaskHoleParameters::baseProfileTypeChanged(int index)
         hole->BaseProfileType.setValue(PartDesign::Hole::baseProfileOption_idxToBitmask(index));
         recomputeFeature();
 
-        if (gizmoContainer) {
-            setGizmoPositions();
-        }
+        setGizmoPositions();
     }
 }
 
@@ -554,6 +552,8 @@ void TaskHoleParameters::depthChanged(int index)
     ui->DrillPointAngle->setEnabled(DepthisDimension);
     ui->DrillForDepth->setEnabled(DepthisDimension);
     setCutDiagram();
+
+    setGizmoPositions();
 }
 
 void TaskHoleParameters::depthValueChanged(double value)
@@ -609,9 +609,7 @@ void TaskHoleParameters::reversedChanged()
         hole->Reversed.setValue(ui->Reversed->isChecked());
         recomputeFeature();
 
-        if (gizmoContainer) {
-            holeDepthGizmo->reverseDir();
-        }
+        setGizmoPositions();
     }
 }
 
@@ -1171,7 +1169,7 @@ void TaskHoleParameters::setupGizmos(ViewProviderHole* vp)
 
     holeDepthGizmo = new LinearGizmo(ui->Depth);
 
-    gizmoContainer = vp->addGizmos({holeDepthGizmo});
+    gizmoContainer = GizmoContainer::createGizmo({holeDepthGizmo}, vp);
 
     setGizmoPositions();
 }
@@ -1239,6 +1237,7 @@ void TaskHoleParameters::setGizmoPositions()
         Part::ShapeOption::DontSimplifyCompound
     );
     Base::Vector3d dir = hole->guessNormalDirection(profileShape);
+    dir *= hole->Reversed.getValue()? -1 : 1;
     std::vector<Base::Vector3d> holePositions = getHolePositionFromShape(profileShape, hole->BaseProfileType.getValue());
 
     if (holePositions.size() == 0) {
@@ -1248,6 +1247,7 @@ void TaskHoleParameters::setGizmoPositions()
     gizmoContainer->visible = true;
 
     holeDepthGizmo->Gizmo::setDraggerPlacement(holePositions[0] - ui->HoleCutDepth->value().getValue() * dir, -dir);
+    holeDepthGizmo->getDraggerContainer()->visible = std::string(hole->DepthType.getValueAsString()) == "Dimension";
 }
 
 

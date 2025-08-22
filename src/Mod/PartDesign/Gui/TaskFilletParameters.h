@@ -63,7 +63,7 @@ protected:
 private:
     std::unique_ptr<Ui_TaskFilletParameters> ui;
 
-    Gui::GizmoContainer* gizmoContainer = nullptr;
+    std::unique_ptr<Gui::GizmoContainer> gizmoContainer;
     Gui::LinearGizmo* radiusGizmo = nullptr;
     Gui::LinearGizmo* radiusGizmo2 = nullptr;
     void setupGizmos(ViewProviderDressUp* vp);

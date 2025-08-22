@@ -271,6 +271,8 @@ void TaskChamferParameters::onFlipDirection(bool flip)
         chamfer->recomputeFeature();
         // hide the chamfer if there was a computation error
         hideOnError();
+
+        setGizmoPositions();
     }
 }
 
@@ -383,17 +385,9 @@ void TaskChamferParameters::setupGizmos(ViewProviderDressUp* vp)
         }
     });
 
-    connect(ui->flipDirection, &QCheckBox::toggled, [this] (bool) {
-        GizmoPlacement placement = distanceGizmo->getDraggerPlacement();
-        GizmoPlacement placement2 = secondDistanceGizmo->getDraggerPlacement();
-
-        distanceGizmo->setDraggerPlacement(placement2.pos, placement2.dir);
-        secondDistanceGizmo->setDraggerPlacement(placement.pos, placement.dir);
-    });
-
-    gizmoContainer = vp->addGizmos({
+    gizmoContainer = GizmoContainer::createGizmo({
         distanceGizmo, secondDistanceGizmo, angleGizmo
-    });
+    }, vp);
 
     setGizmoPositions();
 
@@ -420,15 +414,18 @@ void TaskChamferParameters::setGizmoPositions()
     auto [face1, face2] = getAdjacentFacesFromEdge(edge, baseShape);
 
     DraggerPlacementProps props = getDraggerPlacementFromEdgeAndFace(edge, face1);
+    DraggerPlacementProps props2 = getDraggerPlacementFromEdgeAndFace(edge, face2);
+    if (ui->flipDirection->isChecked()) {
+        std::swap(props, props2);
+    }
+
     distanceGizmo->Gizmo::setDraggerPlacement(props.position, props.dir);
+    secondDistanceGizmo->Gizmo::setDraggerPlacement(props2.position, props2.dir);
 
     angleGizmo->placeBelowLinearGizmo(distanceGizmo);
-    angleGizmo->getDraggerContainer()->setArcNormalDirection(Base::convertTo<SbVec3f>(-props.tangent));
+    angleGizmo->getDraggerContainer()->setArcNormalDirection(Base::convertTo<SbVec3f>(-props.dir.Cross(props2.dir)));
     // Only show the gizmo if the chamfer type is set to distance and angle
     angleGizmo->getDraggerContainer()->visible = getType() == 2;
-
-    DraggerPlacementProps props2 = getDraggerPlacementFromEdgeAndFace(edge, face2);
-    secondDistanceGizmo->Gizmo::setDraggerPlacement(props2.position, props2.dir);
 }
 
 //**************************************************************************

@@ -68,6 +68,16 @@ bool Gizmo::isDelayedUpdateEnabled()
     return hGrp->GetBool("DelayedGizmoUpdate", false);
 }
 
+double Gizmo::getMultFactor()
+{
+    return multFactor;
+}
+
+double Gizmo::getAddFactor()
+{
+    return addFactor;
+}
+
 LinearGizmo::LinearGizmo(QuantitySpinBox* property)
 {
     setProperty(property);
@@ -131,13 +141,6 @@ void LinearGizmo::setDraggerPlacement(const SbVec3f& pos, const SbVec3f& dir)
     draggerContainer->setPointerDirection(dir);
 }
 
-void LinearGizmo::setDraggerPlacement(Base::Placement placement)
-{
-    assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
-    draggerContainer->translation = Base::convertTo<SbVec3f>(placement.getPosition());
-    draggerContainer->rotation = Base::convertTo<SbRotation>(placement.getRotation());
-}
-
 void LinearGizmo::reverseDir() {
     auto dir = getDraggerContainer()->getPointerDirection();
     getDraggerContainer()->setPointerDirection(dir * -1);
@@ -182,6 +185,18 @@ void LinearGizmo::setProperty(QuantitySpinBox* property)
             setDragLength(value);
         }
     );
+}
+
+void LinearGizmo::setMultFactor(const double val)
+{
+    multFactor = val;
+    setDragLength(property->value().getValue());
+}
+
+void LinearGizmo::setAddFactor(const double val)
+{
+    addFactor = val;
+    setDragLength(property->value().getValue());
 }
 
 void LinearGizmo::draggingStarted()
@@ -285,6 +300,11 @@ void RotationGizmo::setDraggerPlacement(const SbVec3f& pos, const SbVec3f& dir)
     assert(draggerContainer && "Forgot to call GizmoContainer::initGizmos?");
     draggerContainer->translation = pos;
     draggerContainer->setPointerDirection(dir);
+}
+
+void RotationGizmo::reverseDir() {
+    auto dir = getDraggerContainer()->getPointerDirection();
+    getDraggerContainer()->setPointerDirection(dir * -1);
 }
 
 void RotationGizmo::placeOverLinearGizmo(LinearGizmo* gizmo)
@@ -428,6 +448,17 @@ void RotationGizmo::setProperty(QuantitySpinBox* property)
     );
 }
 
+void RotationGizmo::setMultFactor(const double val)
+{
+    multFactor = val;
+    setRotAngle(property->value().getValue());
+}
+
+void RotationGizmo::setAddFactor(const double val)
+{
+    addFactor = val;
+    setRotAngle(property->value().getValue());
+}
 
 DirectedRotationGizmo::DirectedRotationGizmo(QuantitySpinBox* property): RotationGizmo(property)
 {}
@@ -557,6 +588,16 @@ void GizmoContainer::uninitGizmos()
         delete gizmo;
     }
     gizmos.clear();
+}
+
+void GizmoContainer::addGizmos(std::initializer_list<Gui::Gizmo*> gizmos)
+{
+    assert(this->gizmos.size() == 0 && "Already called GizmoContainer::addGizmos?");
+
+    for (auto gizmo: gizmos) {
+        addGizmo(gizmo);
+    }
+    initGizmos();
 }
 
 void GizmoContainer::addGizmo(Gizmo* gizmo)

@@ -60,7 +60,7 @@ private:
 private:
     void changeEvent(QEvent *e) override;
 
-    Gui::GizmoContainer* gizmoContainer = nullptr;
+    std::unique_ptr<Gui::GizmoContainer> gizmoContainer;
     Gui::LinearGizmo* linearGizmo = nullptr;
     void setupGizmos();
     void setGizmoPositions();

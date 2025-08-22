@@ -43,11 +43,7 @@ using namespace PartGui;
 PROPERTY_SOURCE(PartGui::ViewProviderPart, PartGui::ViewProviderPartExt)  // NOLINT
 
 
-ViewProviderPart::ViewProviderPart()
-{   if (Gui::GizmoContainer::isEnabled()) {
-        gizmoContainer = std::make_unique<Gui::GizmoContainer>();
-    }
-}
+ViewProviderPart::ViewProviderPart() = default;
 
 ViewProviderPart::~ViewProviderPart() = default;
 
@@ -128,18 +124,10 @@ void ViewProviderPart::setEditViewer(Gui::View3DInventorViewer* viewer, int ModN
     }
 }
 
-Gui::GizmoContainer* ViewProviderPart::addGizmos(std::initializer_list<Gui::Gizmo*> gizmos)
+void ViewProviderPart::setGizmoContainer(Gui::GizmoContainer* gizmoContainer)
 {
-    if (!gizmoContainer) {
-        return nullptr;
-    }
-
-    for (auto gizmo: gizmos) {
-        gizmoContainer->addGizmo(gizmo);
-    }
-    gizmoContainer->initGizmos();
-
-    return gizmoContainer.get();
+    assert(gizmoContainer);
+    this->gizmoContainer = gizmoContainer;
 }
 
 // ----------------------------------------------------------------------------

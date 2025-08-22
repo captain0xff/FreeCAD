@@ -58,9 +58,6 @@ struct GizmoPlacement
 class GuiExport Gizmo
 {
 public:
-    double multFactor = 1.0f;
-    double addFactor = 0.0f;
-
     virtual ~Gizmo() = default;
     virtual SoInteractionKit* initDragger() = 0;
     virtual void uninitDragger() = 0;
@@ -73,7 +70,13 @@ public:
     virtual void orientAlongCamera([[maybe_unused]] SoCamera* camera) {};
     bool isDelayedUpdateEnabled();
 
+    double getMultFactor();
+    double getAddFactor();
+
 protected:
+    double multFactor = 1.0f;
+    double addFactor = 0.0f;
+
     QuantitySpinBox* property = nullptr;
     double initialValue;
 };
@@ -90,7 +93,6 @@ public:
     // Returns the position and rotation of the base of the dragger
     GizmoPlacement getDraggerPlacement() override;
     void setDraggerPlacement(const SbVec3f& pos, const SbVec3f& dir) override;
-    void setDraggerPlacement(Base::Placement placement);
     void reverseDir();
     // Returns the drag distance from the base of the feature
     double getDragLength();
@@ -98,6 +100,8 @@ public:
     void setGeometryScale(float scale) override;
     SoLinearDraggerContainer* getDraggerContainer();
     void setProperty(QuantitySpinBox* property);
+    void setMultFactor(const double val);
+    void setAddFactor(const double val);
 
 private:
     SoLinearDragger* dragger = nullptr;
@@ -126,6 +130,7 @@ public:
     // Returns the position and rotation of the base of the dragger
     GizmoPlacement getDraggerPlacement() override;
     void setDraggerPlacement(const SbVec3f& pos, const SbVec3f& dir) override;
+    void reverseDir();
     // The two gizmos are separated by sepDistance units
     void placeOverLinearGizmo(LinearGizmo* gizmo);
     void placeBelowLinearGizmo(LinearGizmo* gizmo);
@@ -136,6 +141,8 @@ public:
     SoRotationDraggerContainer* getDraggerContainer();
     void orientAlongCamera(SoCamera* camera) override;
     void setProperty(QuantitySpinBox* property);
+    void setMultFactor(const double val);
+    void setAddFactor(const double val);
 
 private:
     SoRotationDragger* dragger = nullptr;
@@ -207,19 +214,30 @@ public:
 
         return ptr;
     }
-
-    void addGizmo(Gizmo* gizmo);
+    // This should be called only once after construction
+    void addGizmos(std::initializer_list<Gui::Gizmo*> gizmos);
     void attachViewer(Gui::View3DInventorViewer* viewer, Base::Placement &origin);
     void setUpAutoScale(SoCamera* cameraIn);
     void calculateScaleAndOrientation();
 
     // Checks if the gizmos are enabled in the preferences
     static bool isEnabled();
+    template <typename T>
+    static inline std::unique_ptr<GizmoContainer> createGizmo(std::initializer_list<Gui::Gizmo*> gizmos, T vp)
+    {
+        auto ptr = std::make_unique<GizmoContainer>();
+        ptr->addGizmos(gizmos);
+        vp->setGizmoContainer(ptr.get());
+
+        return ptr;
+    }
 
 private:
     std::vector<Gizmo*> gizmos;
     SoFieldSensor cameraSensor;
     SoFieldSensor cameraPositionSensor;
+
+    void addGizmo(Gizmo* gizmo);
 
     static void cameraChangeCallback(void* data, SoSensor*);
     static void cameraPositionChangeCallback(void* data, SoSensor*);

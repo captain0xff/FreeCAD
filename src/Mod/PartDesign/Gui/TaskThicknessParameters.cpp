@@ -208,9 +208,7 @@ void TaskThicknessParameters::onReversedChanged(bool on)
         thickness->Reversed.setValue(on);
         onAfterChange(thickness);
 
-        if (gizmoContainer) {
-            linearGizmo->reverseDir();
-        }
+        setGizmoPositions();
     }
 }
 
@@ -280,7 +278,7 @@ void TaskThicknessParameters::setupGizmos(ViewProviderDressUp* vp)
 
     linearGizmo = new Gui::LinearGizmo(ui->Value);
 
-    gizmoContainer = vp->addGizmos({linearGizmo});
+    gizmoContainer = GizmoContainer::createGizmo({linearGizmo}, vp);
 
     setGizmoPositions();
 }
@@ -304,9 +302,9 @@ void TaskThicknessParameters::setGizmoPositions()
 
     Part::TopoShape edge = shapes[0];
     DraggerPlacementProps props = getDraggerPlacementFromEdgeAndFace(edge, faces[0]);
+    props.dir *= thickness->Reversed.getValue()? 1 : -1;
 
     linearGizmo->Gizmo::setDraggerPlacement(props.position, props.dir);
-
 }
 
 //**************************************************************************
