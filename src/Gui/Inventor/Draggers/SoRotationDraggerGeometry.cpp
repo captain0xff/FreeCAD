@@ -25,6 +25,7 @@
 
 #ifndef _PreComp_
 #include <numbers>
+#include <cmath>
 
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/nodes/SoCone.h>
@@ -194,7 +195,7 @@ void SoRotatorGeometry2::notify(SoNotList* notList)
 
         auto transform = SO_GET_ANY_PART(this, "leftArrowTransform", SoTransform);
         transform->translation = SbVec3f{radius, 0, 0};
-        transform->rotation = SbRotation({0, 0, 1}, std::numbers::pi);
+        transform->rotation = SbRotation({0, 0, 1}, std::numbers::pi_v<float>);
 
         transform = SO_GET_ANY_PART(this, "rightArrowTransform", SoTransform);
         transform->translation = SbVec3f{radius * std::cos(angle), radius * std::sin(angle), 0};
