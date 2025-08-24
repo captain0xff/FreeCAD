@@ -75,7 +75,7 @@ protected:
     void setEditViewer(Gui::View3DInventorViewer* viewer, int ModNum) override;
 
 private:
-    Gui::GizmoContainer* gizmoContainer;
+    Gui::GizmoContainer* gizmoContainer = nullptr;
 };
 
 } // namespace PartGui
