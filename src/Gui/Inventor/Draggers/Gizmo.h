@@ -24,6 +24,8 @@
 #ifndef GUI_GIZMO_H
 #define GUI_GIZMO_H
 
+#include <initializer_list>
+#include <memory>
 #include <vector>
 
 #include <Inventor/fields/SoSFBool.h>
