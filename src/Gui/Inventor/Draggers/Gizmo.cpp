@@ -185,6 +185,16 @@ void LinearGizmo::setProperty(QuantitySpinBox* property)
             setDragLength(value);
         }
     );
+    quantityChangedConnection = QuantitySpinBox::connect(
+        property, &Gui::QuantitySpinBox::showFormulaDialog,
+        [this] (bool) {
+            if (this->property->hasExpression()) {
+                getDraggerContainer()->visible = false;
+            } else {
+                getDraggerContainer()->visible = true;
+            }
+        }
+    );
 }
 
 void LinearGizmo::setMultFactor(const double val)
@@ -444,6 +454,16 @@ void RotationGizmo::setProperty(QuantitySpinBox* property)
         property, qOverload<double>(&Gui::QuantitySpinBox::valueChanged),
         [this] (double value) {
             setRotAngle(value);
+        }
+    );
+    quantityChangedConnection = QuantitySpinBox::connect(
+        property, &Gui::QuantitySpinBox::showFormulaDialog,
+        [this] (bool) {
+            if (this->property->hasExpression()) {
+                getDraggerContainer()->visible = false;
+            } else {
+                getDraggerContainer()->visible = true;
+            }
         }
     );
 }
