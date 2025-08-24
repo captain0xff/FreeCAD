@@ -48,6 +48,7 @@ struct GuiExport EdgeMidPointProps
 {
     Base::Vector3d position;
     Base::Vector3d tangent;
+    double middle;
 };
 inline EdgeMidPointProps getEdgeMidPointProps(Part::TopoShape& edge)
 {
@@ -62,7 +63,7 @@ inline EdgeMidPointProps getEdgeMidPointProps(Part::TopoShape& edge)
     [[maybe_unused]] bool ret = curve->tangent(middle, tangent);
     assert(ret && "This is probably a bug so please report it to the issue tracker");
 
-    return {position, tangent};
+    return {position, tangent, middle};
 }
 
 inline Base::Vector3d getCentreOfMassFromFace(TopoDS_Face& face)
@@ -73,7 +74,7 @@ inline Base::Vector3d getCentreOfMassFromFace(TopoDS_Face& face)
 }
 
 inline std::optional<std::pair<Base::Vector3d, Base::Vector3d>>
-getFaceNormalFromPointNearEdge(Part::TopoShape& edge, TopoDS_Face& face)
+getFaceNormalFromPointNearEdge(Part::TopoShape& edge, double middle, TopoDS_Face& face)
 {
     auto _edge = TopoDS::Edge(edge.getShape());
     
@@ -81,7 +82,7 @@ getFaceNormalFromPointNearEdge(Part::TopoShape& edge, TopoDS_Face& face)
     gp_Dir _normal;
     Handle(IntTools_Context) context = new IntTools_Context;
 
-    if (!BOPTools_AlgoTools3D::GetApproxNormalToFaceOnEdge(_edge, face, 0.5, _inwardPoint, _normal, context)) {
+    if (!BOPTools_AlgoTools3D::GetApproxNormalToFaceOnEdge(_edge, face, middle, _inwardPoint, _normal, context)) {
         return std::nullopt;
     }
 
@@ -127,16 +128,16 @@ struct GuiExport DraggerPlacementProps
 };
 inline DraggerPlacementProps getDraggerPlacementFromEdgeAndFace(Part::TopoShape& edge, TopoDS_Face& face)
 {
-    auto [position, tangent] = getEdgeMidPointProps(edge);
+    auto [position, tangent, middle] = getEdgeMidPointProps(edge);
 
     Base::Vector3d normal;
     Base::Vector3d inwardPoint;
-    if (auto ret = getFaceNormalFromPointNearEdge(edge, face)) {
+    if (auto ret = getFaceNormalFromPointNearEdge(edge, middle, face)) {
         inwardPoint = ret->first;
         normal = ret->second;
     } else {
-        // // Failed to compute the normal at a point on the face near the edge
-        // // Fallback to the COM and hope for the best
+        // Failed to compute the normal at a point on the face near the edge
+        // Fallback to the COM and hope for the best
         inwardPoint = getCentreOfMassFromFace(face);
         normal = getFaceNormalFromPoint(position, face);
     }
