@@ -24,8 +24,9 @@
 #include "PreCompiled.h"
 
 #ifndef _PreComp_
-#include <numbers>
+#include <algorithm>
 #include <cmath>
+#include <numbers>
 
 #include <Inventor/nodes/SoBaseColor.h>
 #include <Inventor/nodes/SoCone.h>
