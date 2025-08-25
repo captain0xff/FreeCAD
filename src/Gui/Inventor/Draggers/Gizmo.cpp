@@ -428,7 +428,6 @@ void RotationGizmo::orientAlongCamera(SoCamera* camera)
         return;
     }
 
-    assert(camera);
     SbVec3f cameraDir{0, 0, 1};
     camera->orientation.getValue().multVec(cameraDir, cameraDir);
     SbVec3f pointerDir = linearGizmo->getDraggerContainer()->getPointerDirection();
@@ -501,7 +500,6 @@ void DirectedRotationGizmo::flipArrow()
 {
     auto dragger = getDraggerContainer()->getDragger();
     auto rotator = SO_GET_PART(dragger, "rotator", SoRotatorGeometry2);
-    assert(rotator);
 
     rotator->toggleArrowVisibility();
 }
@@ -529,7 +527,6 @@ void RadialGizmo::setRadius(float radius)
     auto dragger = getDraggerContainer()->getDragger();
     auto rotator = SO_GET_PART(dragger, "rotator", SoRotatorArrow);
     auto baseGeom = SO_GET_PART(dragger, "baseGeom", SoRotatorBase);
-    assert(rotator && baseGeom);
 
     rotator->radius = baseGeom->arcRadius = radius;
 }
@@ -538,7 +535,6 @@ void RadialGizmo::flipArrow()
 {
     auto dragger = getDraggerContainer()->getDragger();
     auto rotator = SO_GET_PART(dragger, "rotator", SoRotatorArrow);
-    assert(rotator);
 
     rotator->flipArrow();
 }
@@ -643,7 +639,6 @@ void GizmoContainer::setUpAutoScale(SoCamera* cameraIn)
 {
     if (cameraIn->getTypeId() == SoOrthographicCamera::getClassTypeId()) {
         auto localCamera = dynamic_cast<SoOrthographicCamera*>(cameraIn);
-        assert(localCamera);
         cameraSensor.attach(&localCamera->height);
         cameraPositionSensor.attach(&localCamera->orientation);
         calculateScaleAndOrientation();
@@ -651,7 +646,6 @@ void GizmoContainer::setUpAutoScale(SoCamera* cameraIn)
     }
     else if (cameraIn->getTypeId() == SoPerspectiveCamera::getClassTypeId()) {
         auto localCamera = dynamic_cast<SoPerspectiveCamera*>(cameraIn);
-        assert(localCamera);
         cameraSensor.attach(&localCamera->position);
         cameraPositionSensor.attach(&localCamera->orientation);
         calculateScaleAndOrientation();
@@ -668,7 +662,6 @@ void GizmoContainer::calculateScaleAndOrientation()
 
 void GizmoContainer::cameraChangeCallback(void* data, SoSensor*)
 {
-    assert(data);
     auto sudoThis = static_cast<GizmoContainer*>(data);
 
     SoField* field = sudoThis->cameraSensor.getAttachedField();
@@ -687,7 +680,6 @@ void GizmoContainer::cameraChangeCallback(void* data, SoSensor*)
 
 void GizmoContainer::cameraPositionChangeCallback(void* data, SoSensor*)
 {
-    assert(data);
     auto sudoThis = static_cast<GizmoContainer*>(data);
 
     SoField* field = sudoThis->cameraSensor.getAttachedField();

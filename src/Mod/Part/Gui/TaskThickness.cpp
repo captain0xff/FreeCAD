@@ -319,7 +319,10 @@ void ThicknessWidget::setupGizmos()
     auto vp = Base::freecad_cast<ViewProviderPart*>(
         Gui::Application::Instance->getViewProvider(d->thickness)
     );
-    assert(vp);
+    if (!vp) {
+        delete linearGizmo;
+        return;
+    }
     gizmoContainer = Gui::GizmoContainer::createGizmo({linearGizmo}, vp);
 
     setGizmoPositions();
@@ -342,7 +345,7 @@ void ThicknessWidget::setGizmoPositions()
     Part::TopoShape face = base.getSubTopoShape(faces[0].c_str());
     if (face.getShape().ShapeType() == TopAbs_FACE) {
         auto edges = getAdjacentEdgesFromFace(face);
-        assert(edges.size() != 0);
+        assert(edges.size() != 0 && "A face without any edges? Please file a bug report");
         DraggerPlacementProps props = getDraggerPlacementFromEdgeAndFace(edges[0], face);
 
         // The part thickness operation by default goes creates towards outside

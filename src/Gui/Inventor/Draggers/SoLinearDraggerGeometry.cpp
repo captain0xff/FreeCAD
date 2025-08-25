@@ -98,7 +98,6 @@ SoArrowGeometry::SoArrowGeometry()
 
 void SoArrowGeometry::notify(SoNotList* notList)
 {
-    assert(notList);
     SoField* lastField = notList->getLastField();
 
     if (lastField == &cylinderHeight) {
@@ -176,7 +175,6 @@ SoArrowBase::SoArrowBase()
 
 void SoArrowBase::notify(SoNotList* notList)
 {
-    assert(notList);
     SoField* lastField = notList->getLastField();
 
     if (lastField == &cylinderHeight || lastField == &translation) {

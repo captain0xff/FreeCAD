@@ -302,7 +302,6 @@ void SoRotationDragger::instantiateBaseGeometry()
     baseGeomVisible = true;
 
     auto baseGeom = SO_GET_ANY_PART(this, "baseGeom", SoRotatorBase);
-    assert(baseGeom && "baseGeom is a duffere");
     baseGeom->geometryScale.connectFrom(&geometryScale);
     baseGeom->rotation.connectFrom(&rotation);
     baseGeom->active.connectFrom(&active);

@@ -116,7 +116,6 @@ SoRotatorGeometry::SoRotatorGeometry()
 
 void SoRotatorGeometry::notify(SoNotList* notList)
 {
-    assert(notList);
     SoField* lastField = notList->getLastField();
 
     if (lastField == &arcRadius || lastField == &arcAngle) {
@@ -185,7 +184,6 @@ SoRotatorGeometry2::SoRotatorGeometry2()
 
 void SoRotatorGeometry2::notify(SoNotList* notList)
 {
-    assert(notList);
     SoField* lastField = notList->getLastField();
 
     inherited::notify(notList);
@@ -269,7 +267,6 @@ void SoRotatorArrow::flipArrow()
 
 void SoRotatorArrow::notify(SoNotList* notList)
 {
-    assert(notList);
     SoField* lastField = notList->getLastField();
 
     if (lastField == &cylinderHeight) {
@@ -359,7 +356,6 @@ SoRotatorBase::SoRotatorBase()
 
 void SoRotatorBase::notify(SoNotList* notList)
 {
-    assert(notList);
     SoField* lastField = notList->getLastField();
 
     if (lastField == &arcRadius || lastField == &minArcRadius || lastField == &rotation || lastField == &geometryScale) {
