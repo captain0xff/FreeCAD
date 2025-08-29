@@ -82,7 +82,7 @@ bool Gizmo::getVisibility() {
     return visible;
 }
 
-LinearGizmo::LinearGizmo(QuantitySpinBox* property)
+LinearGizmo::LinearGizmo(QuantitySpinBox* property, bool create_ovp)
 {
     setProperty(property);
 }
@@ -215,6 +215,50 @@ void LinearGizmo::setVisibility(bool visible)
 {
     this->visible = visible;
     getDraggerContainer()->visible = visible && !property->hasExpression();
+}
+
+void LinearGizmo::createOvp()
+{
+    ovp = new QuantitySpinBox(viewer);
+    ovp->setValue(property->value());
+    ovp->setMinimum(property->minimum());
+    ovp->setMaximum(property->maximum());
+    ovp->setButtonSymbols(QAbstractSpinBox::NoButtons);
+    ovp->setKeyboardTracking(false);
+    ovp->hide();
+
+    // Update the ovp when the property changes
+    QuantitySpinBox::connect(
+        property, qOverload<double>(&Gui::QuantitySpinBox::valueChanged),
+        [this] (double value) {
+            if (ovp->rawValue() != value) {
+                ovp->setValue(value);
+            }
+        }
+    );
+
+    // Update the property when the ovp changes
+    QuantitySpinBox::connect(
+        ovp, qOverload<double>(&Gui::QuantitySpinBox::valueChanged),
+        [this] (double value) {
+            if (property->rawValue() != value) {
+                property->setValue(value);
+            }
+        }
+    );
+}
+
+void LinearGizmo::updateOvpPosition(const SbVec3f& pos, const SbVec3f& dir)
+{
+    if (!viewer) {
+        return;
+    }
+
+    auto vpPos = viewer->toQPoint(viewer->getPointOnViewport(pos));
+    auto vpDir = viewer->getPointOnViewport(dir);
+
+    // QSize ovpSize = ovp->size();
+    ovp->move(vpPos);
 }
 
 void LinearGizmo::draggingStarted()
@@ -645,6 +689,10 @@ void GizmoContainer::attachViewer(Gui::View3DInventorViewer* viewer, Base::Place
     viewer->getDocument()->setEditingTransform(mat);
     So3DAnnotation* annotation = SO_GET_ANY_PART(this, "annotation", So3DAnnotation);
     viewer->setupEditingRoot(annotation, &mat);
+
+    for (auto gizmo: gizmos) {
+        gizmo->viewer = viewer;
+    }
 }
 
 void GizmoContainer::setUpAutoScale(SoCamera* cameraIn)

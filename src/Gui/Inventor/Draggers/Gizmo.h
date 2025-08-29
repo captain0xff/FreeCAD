@@ -50,6 +50,7 @@ class SoLinearDraggerContainer;
 class SoRotationDragger;
 class SoRotationDraggerContainer;
 class View3DInventorViewer;
+class OnViewParameters;
 
 struct GizmoPlacement
 {
@@ -60,6 +61,8 @@ struct GizmoPlacement
 class GuiExport Gizmo
 {
 public:
+    View3DInventorViewer* viewer;
+
     virtual ~Gizmo() = default;
     virtual SoInteractionKit* initDragger() = 0;
     virtual void uninitDragger() = 0;
@@ -82,6 +85,7 @@ protected:
     double addFactor = 0.0f;
 
     QuantitySpinBox* property = nullptr;
+    QuantitySpinBox* ovp = nullptr;
     double initialValue;
 
     bool visible = true;
@@ -91,7 +95,7 @@ protected:
 class GuiExport LinearGizmo: public Gizmo
 {
 public:
-    LinearGizmo(QuantitySpinBox* property);
+    LinearGizmo(QuantitySpinBox* property, bool createOvp=true);
     ~LinearGizmo() override = default;
 
     SoInteractionKit* initDragger() override;
@@ -110,6 +114,8 @@ public:
     void setMultFactor(const double val);
     void setAddFactor(const double val);
     void setVisibility(bool visible);
+    void createOvp();
+    void updateOvpPosition(const SbVec3f& pos, const SbVec3f& dir);
 
 private:
     SoLinearDragger* dragger = nullptr;
