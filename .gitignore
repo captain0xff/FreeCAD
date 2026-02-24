@@ -71,3 +71,6 @@ tsupdate_stdout.log
 # pixi environments
 *.egg-info
 .pixi
+
+src/3rdParty/coin
+src/3rdParty/pivy
