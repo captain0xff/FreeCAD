@@ -91,56 +91,80 @@ enum ViewStatus
  * This class is copied from Inventor/misc/SoRefPtr.h and can be removed when the
  * minimum supported coin version provides this header.
  */
-template <typename T>
-class SoRefPtr {
+template<typename T>
+class SoRefPtr
+{
 public:
-    SoRefPtr(void) noexcept : ptr(NULL) { }
+    SoRefPtr(void) noexcept
+        : ptr(NULL)
+    {}
 
-    explicit SoRefPtr(T * p) : ptr(p)
+    explicit SoRefPtr(T* p)
+        : ptr(p)
     {
-        if (this->ptr) this->ptr->ref();
+        if (this->ptr) {
+            this->ptr->ref();
+        }
     }
 
-    SoRefPtr(const SoRefPtr & other) : ptr(other.ptr)
+    SoRefPtr(const SoRefPtr& other)
+        : ptr(other.ptr)
     {
-        if (this->ptr) this->ptr->ref();
+        if (this->ptr) {
+            this->ptr->ref();
+        }
     }
 
-    SoRefPtr(SoRefPtr && other) noexcept : ptr(other.ptr)
+    SoRefPtr(SoRefPtr&& other) noexcept
+        : ptr(other.ptr)
     {
         other.ptr = NULL;
     }
 
     ~SoRefPtr(void)
     {
-        if (this->ptr) this->ptr->unref();
+        if (this->ptr) {
+            this->ptr->unref();
+        }
     }
 
-    SoRefPtr & operator=(SoRefPtr other) noexcept
+    SoRefPtr& operator=(SoRefPtr other) noexcept
     {
         this->swap(other);
         return *this;
     }
 
-    void reset(T * p = NULL)
+    void reset(T* p = NULL)
     {
         SoRefPtr tmp(p);
         this->swap(tmp);
     }
 
-    T * get(void) const noexcept { return this->ptr; }
-    T & operator*(void) const { return *this->ptr; }
-    T * operator->(void) const noexcept { return this->ptr; }
-    explicit operator bool(void) const noexcept { return this->ptr != NULL; }
+    T* get(void) const noexcept
+    {
+        return this->ptr;
+    }
+    T& operator*(void) const
+    {
+        return *this->ptr;
+    }
+    T* operator->(void) const noexcept
+    {
+        return this->ptr;
+    }
+    explicit operator bool(void) const noexcept
+    {
+        return this->ptr != NULL;
+    }
 
-    void swap(SoRefPtr & other) noexcept
+    void swap(SoRefPtr& other) noexcept
     {
         using std::swap;
         swap(this->ptr, other.ptr);
     }
 
 private:
-    T * ptr;
+    T* ptr;
 };
 
 /** Convenience smart pointer to wrap coin node.
