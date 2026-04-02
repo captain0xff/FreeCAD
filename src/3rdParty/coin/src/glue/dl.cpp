@@ -690,7 +690,7 @@ cc_dl_open(const char * filename)
        somewhere else between us opening it, and until it is used for
        resolving symbols.
     */
-    h->nativehnd = LoadLibraryA(filename);
+    h->nativehnd = LoadLibrary(filename);
 
     if (cc_dl_debugging() && (h->nativehnd == NULL)) {
       cc_string funcstr;
@@ -701,7 +701,7 @@ cc_dl_open(const char * filename)
     }
   }
   else {
-    h->nativehnd = GetModuleHandleA(NULL);
+    h->nativehnd = GetModuleHandle(NULL);
     if (cc_dl_debugging() && (h->nativehnd == NULL)) {
       cc_win32_print_error("cc_dl_open", "GetModuleHandle(NULL)", GetLastError());
     }
@@ -775,8 +775,8 @@ cc_dl_open(const char * filename)
     if (cc_dl_debugging()) {
 #ifdef HAVE_WINDLL_RUNTIME_BINDING
       char libpath[512];
-      DWORD retval = GetModuleFileNameA((HINSTANCE) h->nativehnd, libpath, sizeof(libpath));
-      assert(retval > 0 && "GetModuleFileNameA() failed");
+      DWORD retval = GetModuleFileName((HINSTANCE) h->nativehnd, libpath, sizeof(libpath));
+      assert(retval > 0 && "GetModuleFileName() failed");
       libpath[sizeof(libpath) - 1] = 0;
       cc_debugerror_postinfo("cc_dl_open", "Opened library '%s'", libpath);
 #elif defined (HAVE_DL_LIB) || defined (HAVE_DLD_LIB)
